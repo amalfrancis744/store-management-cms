@@ -19,9 +19,25 @@ interface EncryptedResponse {
 
 export const authAPI = {
   // Login user
-  login: async (email: string, password: string) => {
+  login: async (
+    email: string,
+    password: string,
+    fcmToken?: string,
+    platform?: string
+  ) => {
     try {
-      const encryptedPayload = encryptPayload({ email, password });
+      console.log('Login API called with:', {
+        email,
+        password,
+        fcmToken,
+        platform,
+      });
+      const encryptedPayload = encryptPayload({
+        email,
+        password,
+        fcmToken,
+        platform,
+      });
       console.log('Encrypted Payload:', encryptedPayload);
       const response = await axiosInstance.post(
         '/auth/signin',
@@ -154,9 +170,21 @@ export const authAPI = {
   // Logout user
   logout: async () => {
     try {
-      localStorage.removeItem('token');
-      return { data: { success: true } };
+      // Remove token from local storage
+      
+      const response = await axiosInstance.post('/auth/logout', {
+        platform: 'web',
+      });
+      console.log('Logout response:', response.data);
+      // Check if logout was successful
+      if (response.data && response.data.success) {
+        localStorage.removeItem('token');
+        return { data: { success: true } };
+      } else {
+        throw new Error(response.data.message || 'Logout failed');
+      }
     } catch (error) {
+      console.error('Logout error:', error);
       throw error;
     }
   },

@@ -56,7 +56,7 @@ export function Header({ user, toggleSidebar, logout }: HeaderProps) {
   // Get workspace state from Reduxstore
   const { workspaces, activeWorkspace } = useSelector(
     (state: RootState) => state.workspace
-  ) as {
+  ) as unknown as {
     workspaces: { id: string; name: string }[];
     activeWorkspace: { id: string; name: string } | null;
   };

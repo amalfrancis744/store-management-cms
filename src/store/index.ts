@@ -21,6 +21,7 @@ import orderReducer from './slices/customer/orderSlice';
 import userProfileReducer from './slices/customer/userProfileSlice';
 import customerOrderReducer from './slices/manager/customerOrderSlice';
 import socketReducer from './slices/socket/socketSlice';
+import notificationReducer from './slices/notification/notificationSlice';
 
 import { ThunkAction } from 'redux-thunk';
 import socketMiddleware from '@/middleware/socketMiddleware';
@@ -106,6 +107,13 @@ const socketPersistConfig = {
   // Only persist notifications, not connection state
   whitelist: ['notifications', 'unreadCount'],
 };
+
+// Persist config for notifications
+const notificationPersistConfig = {
+  key: 'notification',
+  storage,
+  whitelist: ['permission', 'fcmToken'], // Persist these fields
+};
 // Wrap reducers with persistReducer
 const persistedAuthReducer = persistReducer(authPersistConfig, authReducer);
 const persistedWorkspaceReducer = persistReducer(
@@ -143,6 +151,10 @@ const persistedSocketReducer = persistReducer(
   socketPersistConfig,
   socketReducer
 );
+const persistedNotificationReducer = persistReducer(
+  notificationPersistConfig,
+  notificationReducer
+);
 
 // Combine all reducers
 const appReducer = combineReducers({
@@ -157,6 +169,7 @@ const appReducer = combineReducers({
   userProfile: persistedUserProfileReducer,
   customerOrder: persistedCustomerOrderReducer,
   socket: persistedSocketReducer,
+   notification: persistedNotificationReducer,
 });
 
 // Root reducer with reset functionality
@@ -175,6 +188,7 @@ const rootReducer = (state: any, action: any) => {
     storage.removeItem('persist:userProfile');
     storage.removeItem('persist:customerOrder');
     storage.removeItem('persist:socket');
+        // storage.removeItem('persist:notification'); // Add this line
 
     // Return undefined to let the reducers return their initial state
     state = undefined;

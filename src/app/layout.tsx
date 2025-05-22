@@ -1,5 +1,7 @@
+// app/layout.tsx
 'use client';
 
+import NotificationProviderFirebase from '@/provider/FirebaseProvider';
 import './globals.css';
 import { Providers } from './providers';
 import NotificationProvider from '@/provider/SocketTestingProvider';
@@ -13,7 +15,11 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <body suppressHydrationWarning>
         <Providers>
-          <NotificationProvider>{children}</NotificationProvider>
+          <NotificationProvider>
+            <NotificationProviderFirebase>
+              {children}
+            </NotificationProviderFirebase>
+          </NotificationProvider>
         </Providers>
       </body>
     </html>

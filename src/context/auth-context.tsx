@@ -19,6 +19,7 @@ import {
 import { User } from '@/types';
 import { persistor } from '@/store/index';
 import { isTokenExpired, willTokenExpireSoon } from '@/utils/tokenUtils';
+import { clearFcmToken } from '@/store/slices/notification/notificationSlice';
 
 type AuthContextType = {
   user: User | null;
@@ -44,6 +45,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const dispatch = useAppDispatch();
   const { user, isLoading, error } = useAppSelector((state) => state.auth);
+    const { fcmToken } = useAppSelector((state) => state.notification);
 
   const router = useRouter();
   const [isInitializing, setIsInitializing] = useState(true);
@@ -135,7 +137,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, password: string) => {
     try {
-      await dispatch(loginUser({ email, password })).unwrap();
+      await dispatch(loginUser({ email, password,fcmToken,platform: 'web' })).unwrap();
       router.push('/dashboard');
     } catch (err) {
       console.error('Login failed:', err);
@@ -154,7 +156,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     try {
       // First, dispatch logout action to clear auth state and localStorage
+
       await dispatch(logoutUser()).unwrap();
+
+      await dispatch(clearFcmToken()).unwrap();
 
       // Then purge all persisted Redux states
       await persistor.purge();
