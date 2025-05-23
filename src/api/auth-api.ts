@@ -22,21 +22,15 @@ export const authAPI = {
   login: async (
     email: string,
     password: string,
-    fcmToken?: string,
-    platform?: string
   ) => {
     try {
       console.log('Login API called with:', {
         email,
         password,
-        fcmToken,
-        platform,
       });
       const encryptedPayload = encryptPayload({
         email,
         password,
-        fcmToken,
-        platform,
       });
       console.log('Encrypted Payload:', encryptedPayload);
       const response = await axiosInstance.post(
@@ -261,6 +255,20 @@ export const authAPI = {
 
         return { data: { user } };
       }
+    } catch (error) {
+      throw error;
+    }
+  },
+
+
+  // save user data with fcm token (for push notifications)
+  saveFcmToken: async (fcmToken: string) => {
+    try {
+      const response = await axiosInstance.post('/auth/addToken', {
+        fcmToken,
+        platform: 'web',
+      });
+      return { data: response.data };
     } catch (error) {
       throw error;
     }

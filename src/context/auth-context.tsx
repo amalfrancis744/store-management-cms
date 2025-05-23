@@ -45,7 +45,6 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const dispatch = useAppDispatch();
   const { user, isLoading, error } = useAppSelector((state) => state.auth);
-    const { fcmToken } = useAppSelector((state) => state.notification);
 
   const router = useRouter();
   const [isInitializing, setIsInitializing] = useState(true);
@@ -137,7 +136,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
   const login = async (email: string, password: string) => {
     try {
-      await dispatch(loginUser({ email, password,fcmToken,platform: 'web' })).unwrap();
+      await dispatch(loginUser({ email, password })).unwrap();
       router.push('/dashboard');
     } catch (err) {
       console.error('Login failed:', err);

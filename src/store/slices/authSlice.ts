@@ -149,11 +149,11 @@ export const refreshAuthToken = createAsyncThunk(
 export const loginUser = createAsyncThunk(
   'auth/login',
   async (
-   { email, password, fcmToken,platform }: { email: string; password: string; fcmToken?: string, platform: string},
+   { email, password }: { email: string; password: string},
     { rejectWithValue }
   ) => {
     try {
-      const response: any = await authAPI.login(email, password, fcmToken, platform);
+      const response: any = await authAPI.login(email, password);
 
       // Store the token if provided
       if (response.data.token) {
@@ -182,7 +182,6 @@ export const registerUser = createAsyncThunk(
       password: string;
       roles: string[];
       phone: string;
-      fcmToken?: string;
     },
     { rejectWithValue }
   ) => {

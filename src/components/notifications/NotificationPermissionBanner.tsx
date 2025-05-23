@@ -2,29 +2,44 @@
 'use client';
 
 import { useAppDispatch } from '@/hooks/redux';
-import { requestNotificationPermission } from '@/store/slices/notification/notificationSlice';
-import { useEffect } from 'react';
+import {
+  initializeNotifications,
+  requestNotificationPermission,
+} from '@/store/slices/notification/notificationSlice';
+import { useEffect, useRef } from 'react';
 
 export default function NotificationPermissionBanner() {
   const dispatch = useAppDispatch();
+  const hasInitialized = useRef(false); // Prevents multiple inits
 
   useEffect(() => {
-    const handleAutoRequest = async () => {
-      // Only prompt if notifications are supported and permission hasn't been determined
-      if ('Notification' in window && Notification.permission === 'default') {
-        try {
-          // This will trigger the browser's native permission prompt
+    const handleNotificationSetup = async () => {
+      console.log('Requesting notification permission...', Notification.permission);
+
+      if (!('Notification' in window)) {
+        console.warn('This browser does not support notifications.');
+        return;
+      }
+
+      try {
+        if (Notification.permission === 'default') {
+          // Ask for permission if not yet decided
           await dispatch(requestNotificationPermission());
-        } catch (error) {
-          console.error('Notification permission request failed:', error);
         }
+
+        // Initialize if permission is granted and not yet initialized
+        if (Notification.permission === 'granted' && !hasInitialized.current) {
+          hasInitialized.current = true;
+          await dispatch(initializeNotifications());
+        }
+      } catch (error) {
+        console.error('Notification setup failed:', error);
       }
     };
 
-    // Add a small delay to avoid immediate prompt on page load
-    const timer = setTimeout(handleAutoRequest, 2000);
+    const timer = setTimeout(handleNotificationSetup, 2000);
     return () => clearTimeout(timer);
   }, [dispatch]);
 
-  return null; // This component doesn't render anything
+  return null; 
 }

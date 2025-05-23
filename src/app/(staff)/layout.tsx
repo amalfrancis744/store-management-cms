@@ -11,6 +11,7 @@ import { Header } from '@/components/header/header';
 import { RootState } from '@/store';
 import { useSelector } from 'react-redux';
 import { Button } from '@/components/ui/button';
+import NotificationPermissionBanner from '@/components/notifications/NotificationPermissionBanner';
 
 export default function AdminLayout({
   children,
@@ -145,7 +146,9 @@ export default function AdminLayout({
         {/* Use the Header component */}
         <Header user={user} toggleSidebar={toggleSidebar} logout={logout} />
 
-        <main className="p-4 md:p-6">{children}</main>
+        <main className="p-4 md:p-6">
+          <NotificationPermissionBanner/>
+          {children}</main>
       </div>
     </div>
   );

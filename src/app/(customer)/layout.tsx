@@ -20,6 +20,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { Cart } from '@/components/cart/cart';
 import { Button } from '@/components/ui/button';
+import NotificationPermissionBanner from '@/components/notifications/NotificationPermissionBanner';
 
 export default function CustomerLayout({
   children,
@@ -141,7 +142,9 @@ export default function CustomerLayout({
       <div className="flex-1 flex flex-col overflow-auto">
         {/* Customer Header */}
         <Header user={user} toggleSidebar={toggleSidebar} logout={logout} />
-        <main className="flex-1">{children}</main>
+        <main className="flex-1">
+           <NotificationPermissionBanner/>
+          {children}</main>
       </div>
       <Cart />
     </div>

@@ -9,12 +9,12 @@ import { messaging } from '@/service/firebaseMessaging';
 
 export default function NotificationProviderFirebase({ children }: { children: ReactNode }) {
   const dispatch = useAppDispatch();
-  const { permission, fcmToken } = useAppSelector((state) => state.notification);
+  const { permission } = useAppSelector((state) => state.notification);
 
-  useEffect(() => {
-    // Initialize notifications when component mounts
-    dispatch(initializeNotifications());
-  }, [dispatch]);
+  // useEffect(() => {
+  //   // Initialize notifications when component mounts
+  //   dispatch(initializeNotifications());
+  // }, [dispatch]);
 
   useEffect(() => {
     if (permission !== 'granted' || !messaging) return;

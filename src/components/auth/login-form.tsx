@@ -41,7 +41,7 @@ export function LoginForm() {
   const router = useRouter();
   const dispatch = useAppDispatch();
   const { isLoading, error } = useAppSelector((state) => state.auth);
-   const { fcmToken } = useAppSelector((state) => state.notification);
+   
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -55,7 +55,7 @@ export function LoginForm() {
     try {
       // Start the login process
       const resultAction = await dispatch(
-        loginUser({ email: values.email, password: values.password,fcmToken ,platform: 'web' })
+        loginUser({ email: values.email, password: values.password })
       );
 
       if (loginUser.fulfilled.match(resultAction)) {

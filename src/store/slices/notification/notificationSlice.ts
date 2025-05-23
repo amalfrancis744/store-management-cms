@@ -1,7 +1,7 @@
 // store/slices/notificationSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { messaging, getToken } from '@/service/firebaseMessaging';
-import axiosInstance from '@/api/axios-config';
+import { authAPI } from '@/api/auth-api';
 
 interface NotificationState {
   permission: NotificationPermission | null;
@@ -90,8 +90,14 @@ export const initializeNotifications = createAsyncThunk(
               vapidKey: VAPID_KEY,
             });
             if (fcmToken) {
-                localStorage.setItem('permission', 'granted');
+
+              console.log('FCM Token:', fcmToken);
+
+                // localStorage.setItem('permission', 'granted');
               //   await saveTokenToServer(fcmToken);
+
+              await authAPI.saveFcmToken(fcmToken);
+
               return { permission: 'granted', fcmToken };
             }
           } catch (error) {
