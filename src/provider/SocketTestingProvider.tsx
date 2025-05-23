@@ -13,11 +13,11 @@ export default function NotificationProvider({
   const { user } = useSelector((state: RootState) => state.auth);
   const { isConnected, connectionAttempts, connect, disconnect } = useSocket();
 
-  console.log('NotificationProvider initialized', {
-    user,
-    isConnected,
-    connectionAttempts,
-  });
+  // console.log('NotificationProvider initialized', {
+  //   user,
+  //   isConnected,
+  //   connectionAttempts,
+  // });
 
   // Effect to initialize socket as soon as user is available
   useEffect(() => {
