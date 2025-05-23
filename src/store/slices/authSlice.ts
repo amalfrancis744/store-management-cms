@@ -149,7 +149,7 @@ export const refreshAuthToken = createAsyncThunk(
 export const loginUser = createAsyncThunk(
   'auth/login',
   async (
-   { email, password }: { email: string; password: string},
+    { email, password }: { email: string; password: string },
     { rejectWithValue }
   ) => {
     try {
@@ -213,7 +213,6 @@ export const logoutUser = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       await authAPI.logout();
-
 
       // Clear all localStorage items
       if (typeof window !== 'undefined') {

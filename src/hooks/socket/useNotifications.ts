@@ -22,11 +22,7 @@ interface UseNotificationsOptions {
 }
 
 export const useNotifications = (options: UseNotificationsOptions = {}) => {
-  const {
-    workspaceId,
-    autoFetch = true,
-    limit = 10,
-  } = options;
+  const { workspaceId, autoFetch = true, limit = 10 } = options;
 
   const dispatch = useDispatch<AppDispatch>();
   const {
@@ -51,17 +47,20 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
   /**
    * Load notifications from API
    */
-  const loadNotifications = useCallback((params: FetchNotificationsParams = {}) => {
-    const fetchParams: FetchNotificationsParams = {
-      limit,
-      offset: 0,
-      isRead: false, // Default to unread notifications
-      workspaceId,
-      ...params,
-    };
+  const loadNotifications = useCallback(
+    (params: FetchNotificationsParams = {}) => {
+      const fetchParams: FetchNotificationsParams = {
+        limit,
+        offset: 0,
+        isRead: false, // Default to unread notifications
+        workspaceId,
+        ...params,
+      };
 
-    return dispatch(fetchNotifications(fetchParams));
-  }, [dispatch, limit, workspaceId]);
+      return dispatch(fetchNotifications(fetchParams));
+    },
+    [dispatch, limit, workspaceId]
+  );
 
   /**
    * Load more notifications (pagination)
@@ -98,24 +97,30 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
   /**
    * Load all notifications (including read ones)
    */
-  const loadAllNotifications = useCallback((params: FetchNotificationsParams = {}) => {
-    const fetchParams: FetchNotificationsParams = {
-      limit,
-      offset: 0,
-      workspaceId,
-      ...params,
-      // Don't filter by isRead to get all notifications
-    };
+  const loadAllNotifications = useCallback(
+    (params: FetchNotificationsParams = {}) => {
+      const fetchParams: FetchNotificationsParams = {
+        limit,
+        offset: 0,
+        workspaceId,
+        ...params,
+        // Don't filter by isRead to get all notifications
+      };
 
-    return dispatch(fetchNotifications(fetchParams));
-  }, [dispatch, limit, workspaceId]);
+      return dispatch(fetchNotifications(fetchParams));
+    },
+    [dispatch, limit, workspaceId]
+  );
 
   /**
    * Dismiss a specific notification (local only)
    */
-  const dismiss = useCallback((id: string) => {
-    dispatch(dismissNotification(id));
-  }, [dispatch]);
+  const dismiss = useCallback(
+    (id: string) => {
+      dispatch(dismissNotification(id));
+    },
+    [dispatch]
+  );
 
   /**
    * Mark all notifications as read (local + API)
@@ -135,24 +140,30 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
   /**
    * Mark a specific notification as read (local + API)
    */
-  const markAsRead = useCallback(async (id: string) => {
-    try {
-      // Update API first
-      await dispatch(markNotificationAsReadAPI(id)).unwrap();
-      // Local state is updated by the fulfilled case
-    } catch (error) {
-      // Fallback to local update if API fails
-      console.error('Failed to mark notification as read on server:', error);
-      dispatch(markNotificationAsRead(id));
-    }
-  }, [dispatch]);
+  const markAsRead = useCallback(
+    async (id: string) => {
+      try {
+        // Update API first
+        await dispatch(markNotificationAsReadAPI(id)).unwrap();
+        // Local state is updated by the fulfilled case
+      } catch (error) {
+        // Fallback to local update if API fails
+        console.error('Failed to mark notification as read on server:', error);
+        dispatch(markNotificationAsRead(id));
+      }
+    },
+    [dispatch]
+  );
 
   /**
    * Mark notification as read (local only - for quick UI updates)
    */
-  const markAsReadLocal = useCallback((id: string) => {
-    dispatch(markNotificationAsRead(id));
-  }, [dispatch]);
+  const markAsReadLocal = useCallback(
+    (id: string) => {
+      dispatch(markNotificationAsRead(id));
+    },
+    [dispatch]
+  );
 
   /**
    * Mark all as read (local only - for quick UI updates)
@@ -164,31 +175,35 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
   /**
    * Add a custom notification manually
    */
-  const addCustomNotification = useCallback((
-    notification: Omit<Notification, 'id' | 'createdAt' | 'read'>
-  ) => {
-    const newNotification: Notification = {
-      ...notification,
-      id: `manual-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
-      createdAt: new Date().toISOString(),
-      read: false,
-    };
+  const addCustomNotification = useCallback(
+    (notification: Omit<Notification, 'id' | 'createdAt' | 'read'>) => {
+      const newNotification: Notification = {
+        ...notification,
+        id: `manual-${Date.now()}-${Math.random().toString(36).substring(2, 9)}`,
+        createdAt: new Date().toISOString(),
+        read: false,
+      };
 
-    dispatch(addNotification(newNotification));
-  }, [dispatch]);
+      dispatch(addNotification(newNotification));
+    },
+    [dispatch]
+  );
 
   /**
    * Send a notification to other users via socket
    */
-  const sendNotification = useCallback((payload: {
-    title: string;
-    message: string;
-    type: 'INFO' | 'WARNING' | 'ERROR' | 'SUCCESS' | 'SYSTEM';
-    workspaceId?: number;
-    recipientId?: string;
-  }) => {
-    return emitSocketEvent('send-notification', payload);
-  }, []);
+  const sendNotification = useCallback(
+    (payload: {
+      title: string;
+      message: string;
+      type: 'INFO' | 'WARNING' | 'ERROR' | 'SUCCESS' | 'SYSTEM';
+      workspaceId?: number;
+      recipientId?: string;
+    }) => {
+      return emitSocketEvent('send-notification', payload);
+    },
+    []
+  );
 
   /**
    * Clear all notifications (local only)
@@ -201,12 +216,12 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
    * Get unread notifications only
    */
 
-  const unreadNotifications = notifications.filter(n => !n.read);
+  const unreadNotifications = notifications.filter((n) => !n.read);
 
   /**
    * Get read notifications only
    */
-  const readNotifications = notifications.filter(n => n.read);
+  const readNotifications = notifications.filter((n) => n.read);
 
   /**
    * Check if there are more notifications to load
@@ -216,16 +231,22 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
   /**
    * Get notification by ID
    */
-  const getNotificationById = useCallback((id: string) => {
-    return notifications.find(n => n.id === id);
-  }, [notifications]);
+  const getNotificationById = useCallback(
+    (id: string) => {
+      return notifications.find((n) => n.id === id);
+    },
+    [notifications]
+  );
 
   /**
    * Get notifications by type
    */
-  const getNotificationsByType = useCallback((type: Notification['type']) => {
-    return notifications.filter(n => n.type === type);
-  }, [notifications]);
+  const getNotificationsByType = useCallback(
+    (type: Notification['type']) => {
+      return notifications.filter((n) => n.type === type);
+    },
+    [notifications]
+  );
 
   return {
     // State
@@ -238,10 +259,10 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
     isLoadingNotifications,
     hasMoreNotifications,
     lastError,
-    
+
     // Pagination info
     pagination: notificationsPagination,
-    
+
     // Actions - API + Local
     loadNotifications,
     loadMoreNotifications,
@@ -249,17 +270,17 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
     loadAllNotifications,
     markAllRead,
     markAsRead,
-    
+
     // Actions - Local only
     dismiss,
     markAsReadLocal,
     markAllReadLocal,
     addCustomNotification,
     clearAll,
-    
+
     // Socket actions
     sendNotification,
-    
+
     // Utilities
     getNotificationById,
     getNotificationsByType,

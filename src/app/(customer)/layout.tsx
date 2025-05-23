@@ -143,8 +143,9 @@ export default function CustomerLayout({
         {/* Customer Header */}
         <Header user={user} toggleSidebar={toggleSidebar} logout={logout} />
         <main className="flex-1">
-           <NotificationPermissionBanner/>
-          {children}</main>
+          <NotificationPermissionBanner />
+          {children}
+        </main>
       </div>
       <Cart />
     </div>

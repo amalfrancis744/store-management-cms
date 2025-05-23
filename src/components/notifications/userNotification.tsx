@@ -21,9 +21,9 @@ interface NotificationsProps {
   maxHeight?: string;
 }
 
-export default function Notifications({ 
-  workspaceId, 
-  maxHeight = "400px" 
+export default function Notifications({
+  workspaceId,
+  maxHeight = '400px',
 }: NotificationsProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [showAllNotifications, setShowAllNotifications] = useState(false);
@@ -41,10 +41,10 @@ export default function Notifications({
     loadMoreNotifications,
     refreshNotifications,
     loadAllNotifications,
-  } = useNotifications({ 
+  } = useNotifications({
     workspaceId,
     autoFetch: true,
-    limit: 10 
+    limit: 10,
   });
 
   const { isConnected, connectionAttempts } = useSocket();
@@ -58,7 +58,10 @@ export default function Notifications({
   //   }
   // }, [showAllNotifications, isOpen, loadAllNotifications]);
 
-  const handleNotificationClick = async (notificationId: string, isRead: boolean) => {
+  const handleNotificationClick = async (
+    notificationId: string,
+    isRead: boolean
+  ) => {
     if (!isRead) {
       await markAsRead(notificationId);
     }
@@ -84,7 +87,9 @@ export default function Notifications({
     loadMoreNotifications();
   };
 
-  const displayNotifications = showAllNotifications ? notifications : unreadNotifications;
+  const displayNotifications = showAllNotifications
+    ? notifications
+    : unreadNotifications;
 
   // Format notification type for display
   const formatNotificationType = (type: string) => {
@@ -180,13 +185,13 @@ export default function Notifications({
             )}
           </div>
         </DropdownMenuLabel>
-        
+
         <DropdownMenuSeparator />
 
         {/* Toggle between unread and all notifications */}
         <div className="flex gap-1 p-2">
           <Button
-            variant={!showAllNotifications ? "default" : "ghost"}
+            variant={!showAllNotifications ? 'default' : 'ghost'}
             size="sm"
             onClick={() => setShowAllNotifications(false)}
             className="flex-1 text-xs"
@@ -194,7 +199,7 @@ export default function Notifications({
             Unread ({unreadCount})
           </Button>
           <Button
-            variant={showAllNotifications ? "default" : "ghost"}
+            variant={showAllNotifications ? 'default' : 'ghost'}
             size="sm"
             onClick={() => setShowAllNotifications(true)}
             className="flex-1 text-xs"
@@ -222,9 +227,9 @@ export default function Notifications({
                   Loading notifications...
                 </div>
               ) : showAllNotifications ? (
-                "No notifications"
+                'No notifications'
               ) : (
-                "No unread notifications"
+                'No unread notifications'
               )}
             </div>
           ) : (
@@ -233,12 +238,21 @@ export default function Notifications({
                 <DropdownMenuItem
                   key={notification.id}
                   className={`flex flex-col items-start p-3 cursor-pointer ${
-                    !notification.read ? 'bg-blue-50 border-l-2 border-l-blue-500' : ''
+                    !notification.read
+                      ? 'bg-blue-50 border-l-2 border-l-blue-500'
+                      : ''
                   }`}
-                  onClick={() => handleNotificationClick(notification.id, notification.read || false)}
+                  onClick={() =>
+                    handleNotificationClick(
+                      notification.id,
+                      notification.read || false
+                    )
+                  }
                 >
                   <div className="flex w-full justify-between items-start">
-                    <span className={`font-medium text-sm ${!notification.read ? 'text-blue-900' : ''}`}>
+                    <span
+                      className={`font-medium text-sm ${!notification.read ? 'text-blue-900' : ''}`}
+                    >
                       {notification.title}
                     </span>
                     <div className="flex items-center gap-2">
@@ -258,12 +272,15 @@ export default function Notifications({
                   </p>
                   <div className="mt-2 flex w-full items-center justify-between text-xs text-gray-400">
                     <span>
-                      {new Date(notification.createdAt).toLocaleString(undefined, {
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
+                      {new Date(notification.createdAt).toLocaleString(
+                        undefined,
+                        {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        }
+                      )}
                     </span>
                     <Button
                       variant="ghost"

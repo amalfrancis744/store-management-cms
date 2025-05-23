@@ -19,10 +19,7 @@ interface EncryptedResponse {
 
 export const authAPI = {
   // Login user
-  login: async (
-    email: string,
-    password: string,
-  ) => {
+  login: async (email: string, password: string) => {
     try {
       console.log('Login API called with:', {
         email,
@@ -165,7 +162,7 @@ export const authAPI = {
   logout: async () => {
     try {
       // Remove token from local storage
-      
+
       const response = await axiosInstance.post('/auth/logout', {
         platform: 'web',
       });
@@ -259,7 +256,6 @@ export const authAPI = {
       throw error;
     }
   },
-
 
   // save user data with fcm token (for push notifications)
   saveFcmToken: async (fcmToken: string) => {

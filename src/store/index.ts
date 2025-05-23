@@ -169,7 +169,7 @@ const appReducer = combineReducers({
   userProfile: persistedUserProfileReducer,
   customerOrder: persistedCustomerOrderReducer,
   socket: persistedSocketReducer,
-   notification: persistedNotificationReducer,
+  notification: persistedNotificationReducer,
 });
 
 // Root reducer with reset functionality
@@ -188,7 +188,7 @@ const rootReducer = (state: any, action: any) => {
     storage.removeItem('persist:userProfile');
     storage.removeItem('persist:customerOrder');
     storage.removeItem('persist:socket');
-        // storage.removeItem('persist:notification'); // Add this line
+    // storage.removeItem('persist:notification'); // Add this line
 
     // Return undefined to let the reducers return their initial state
     state = undefined;

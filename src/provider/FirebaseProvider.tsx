@@ -3,13 +3,22 @@
 
 import { ReactNode, useEffect } from 'react';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
-import { initializeNotifications, setLastNotification } from '@/store/slices/notification/notificationSlice';
+import {
+  initializeNotifications,
+  setLastNotification,
+} from '@/store/slices/notification/notificationSlice';
 import { onMessage } from '@/service/firebaseMessaging';
 import { messaging } from '@/service/firebaseMessaging';
 
-export default function NotificationProviderFirebase({ children }: { children: ReactNode }) {
+export default function NotificationProviderFirebase({
+  children,
+}: {
+  children: ReactNode;
+}) {
   const dispatch = useAppDispatch();
-  const { permission } = useAppSelector((state) => state.notification);
+  const { permission, fcmToken } = useAppSelector(
+    (state) => state.notification
+  );
 
   // useEffect(() => {
   //   // Initialize notifications when component mounts
@@ -23,7 +32,7 @@ export default function NotificationProviderFirebase({ children }: { children: R
     const unsubscribe = onMessage(messaging, (payload) => {
       console.log('Foreground message received:', payload);
       dispatch(setLastNotification(payload));
-      
+
       // Show notification if needed
       if (Notification.permission === 'granted' && payload.notification) {
         new Notification(payload.notification.title || 'New notification', {

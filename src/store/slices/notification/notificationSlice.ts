@@ -50,7 +50,6 @@ export const requestNotificationPermission = createAsyncThunk(
       });
 
       // Save token to backend
-  
 
       return { permission, fcmToken };
     } catch (error: any) {
@@ -90,10 +89,9 @@ export const initializeNotifications = createAsyncThunk(
               vapidKey: VAPID_KEY,
             });
             if (fcmToken) {
-
               console.log('FCM Token:', fcmToken);
 
-                // localStorage.setItem('permission', 'granted');
+              // localStorage.setItem('permission', 'granted');
               //   await saveTokenToServer(fcmToken);
 
               await authAPI.saveFcmToken(fcmToken);

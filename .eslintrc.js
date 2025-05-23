@@ -9,12 +9,12 @@ module.exports = {
     '@typescript-eslint/ban-types': 'off',
     '@typescript-eslint/no-empty-function': 'off',
     '@typescript-eslint/no-non-null-assertion': 'off',
-    
+
     // Disable other strict rules
     'react-hooks/exhaustive-deps': 'off',
     'react/no-unescaped-entities': 'off',
     '@next/next/no-img-element': 'off',
-    
+
     // Basic JavaScript rules only
     'no-console': 'warn',
   },
@@ -23,6 +23,6 @@ module.exports = {
     '.next/',
     'public/',
     '*.config.js',
-    '.eslintrc.js'
+    '.eslintrc.js',
   ],
-}
+};

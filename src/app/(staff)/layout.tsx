@@ -147,8 +147,9 @@ export default function AdminLayout({
         <Header user={user} toggleSidebar={toggleSidebar} logout={logout} />
 
         <main className="p-4 md:p-6">
-          <NotificationPermissionBanner/>
-          {children}</main>
+          <NotificationPermissionBanner />
+          {children}
+        </main>
       </div>
     </div>
   );

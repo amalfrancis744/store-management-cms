@@ -171,8 +171,6 @@
 
 // export default socketSlice.reducer;
 
-
-
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
 import { Socket } from 'socket.io-client';
 import { toast } from 'react-toastify';
@@ -255,11 +253,13 @@ export const fetchNotifications = createAsyncThunk(
   async (params: FetchNotificationsParams = {}, { rejectWithValue }) => {
     try {
       const queryParams = new URLSearchParams();
-      
-      if (params.isRead !== undefined) queryParams.append('isRead', params.isRead.toString());
+
+      if (params.isRead !== undefined)
+        queryParams.append('isRead', params.isRead.toString());
       if (params.limit) queryParams.append('limit', params.limit.toString());
       if (params.offset) queryParams.append('offset', params.offset.toString());
-      if (params.workspaceId) queryParams.append('workspaceId', params.workspaceId.toString());
+      if (params.workspaceId)
+        queryParams.append('workspaceId', params.workspaceId.toString());
 
       const response = await axiosInstance.get<NotificationResponse>(
         `/notifications?${queryParams.toString()}`
@@ -296,16 +296,17 @@ export const markAllNotificationsAsReadAPI = createAsyncThunk(
   'socket/markAllNotificationsAsRead',
   async (workspaceId?: number, { rejectWithValue }) => {
     try {
-      const url = workspaceId 
+      const url = workspaceId
         ? `/notifications/mark-all-read?workspaceId=${workspaceId}`
         : '/notifications/mark-all-read';
-      
+
       await axiosInstance.patch(url);
       return true;
     } catch (error: any) {
       console.error('Failed to mark all notifications as read:', error);
       return rejectWithValue(
-        error.response?.data?.message || 'Failed to mark all notifications as read'
+        error.response?.data?.message ||
+          'Failed to mark all notifications as read'
       );
     }
   }
@@ -380,8 +381,12 @@ const socketSlice = createSlice({
 
       if (!notificationExists) {
         // Add new notification at the beginning
-        state.notifications = [normalizedNotification, ...state.notifications].slice(
-          0, 50 // Keep more notifications for better UX
+        state.notifications = [
+          normalizedNotification,
+          ...state.notifications,
+        ].slice(
+          0,
+          50 // Keep more notifications for better UX
         );
 
         // Increment unread count if notification is unread
@@ -446,7 +451,7 @@ const socketSlice = createSlice({
       .addCase(disconnectSocketThunk.fulfilled, (state) => {
         state.isConnected = false;
       })
-      
+
       // Fetch notifications cases
       .addCase(fetchNotifications.pending, (state) => {
         state.isLoadingNotifications = true;
@@ -454,11 +459,11 @@ const socketSlice = createSlice({
       })
       .addCase(fetchNotifications.fulfilled, (state, action) => {
         state.isLoadingNotifications = false;
-        
+
         const { notifications, total, pagination } = action.payload;
-        
+
         // Normalize notifications (convert isRead to read)
-        const normalizedNotifications = notifications.map(notification => ({
+        const normalizedNotifications = notifications.map((notification) => ({
           ...notification,
           read: notification.read ?? !notification.isRead,
         }));
@@ -466,11 +471,15 @@ const socketSlice = createSlice({
         if (pagination.offset === 0) {
           // First load - replace notifications
           state.notifications = normalizedNotifications;
-          state.unreadCount = normalizedNotifications.filter(n => !n.read).length;
+          state.unreadCount = normalizedNotifications.filter(
+            (n) => !n.read
+          ).length;
         } else {
           // Pagination - append notifications
-          const existingIds = new Set(state.notifications.map(n => n.id));
-          const newNotifications = normalizedNotifications.filter(n => !existingIds.has(n.id));
+          const existingIds = new Set(state.notifications.map((n) => n.id));
+          const newNotifications = normalizedNotifications.filter(
+            (n) => !existingIds.has(n.id)
+          );
           state.notifications = [...state.notifications, ...newNotifications];
         }
 
@@ -486,11 +495,13 @@ const socketSlice = createSlice({
         state.isLoadingNotifications = false;
         state.lastError = action.payload as string;
       })
-      
+
       // Mark as read API cases
       .addCase(markNotificationAsReadAPI.fulfilled, (state, action) => {
         const notificationId = action.payload;
-        const notification = state.notifications.find(n => n.id === notificationId);
+        const notification = state.notifications.find(
+          (n) => n.id === notificationId
+        );
         if (notification && !notification.read) {
           notification.read = true;
           state.unreadCount = Math.max(0, state.unreadCount - 1);
@@ -499,11 +510,11 @@ const socketSlice = createSlice({
       .addCase(markNotificationAsReadAPI.rejected, (state, action) => {
         state.lastError = action.payload as string;
       })
-      
+
       // Mark all as read API cases
       .addCase(markAllNotificationsAsReadAPI.fulfilled, (state) => {
         state.unreadCount = 0;
-        state.notifications = state.notifications.map(notification => ({
+        state.notifications = state.notifications.map((notification) => ({
           ...notification,
           read: true,
         }));
