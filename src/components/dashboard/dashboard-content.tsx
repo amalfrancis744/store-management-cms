@@ -24,6 +24,7 @@ import {
 } from 'react';
 
 export function DashboardContent() {
+  
   const { data, isLoading, error, refetch } = useAdminDashboard();
   const [activeTab, setActiveTab] = useState<'month' | 'week'>('month');
 

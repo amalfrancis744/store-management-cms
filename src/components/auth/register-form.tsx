@@ -28,11 +28,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
-import { registerUser, clearErrors } from '@/store/slices/authSlice';
+import { registerUser, clearErrors, resendSignupOTP } from '@/store/slices/authSlice';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { OTPVerificationModal } from '../modal/OTPVerificationModal';
 
-// Define the role enum to match your API
+
 const Role = {
   ADMIN: 'ADMIN',
   MANAGER: 'MANAGER',
@@ -40,7 +41,6 @@ const Role = {
   CUSTOMER: 'CUSTOMER',
 } as const;
 
-// Define the schema for form validation
 const registerSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
@@ -48,9 +48,6 @@ const registerSchema = z.object({
   password: z.string().min(6, 'Password must be at least 6 characters'),
   phone: z.string().min(10, 'Phone number must be at least 10 digits'),
   role: z.enum(['ADMIN', 'MANAGER', 'STAFF', 'CUSTOMER']),
-  // agreedToTerms: z.literal(true, {
-  //   errorMap: () => ({ message: "You must agree to the terms and conditions" }),
-  // })
 });
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
@@ -60,11 +57,13 @@ export function RegisterForm() {
   const [passwordStrength, setPasswordStrength] = useState<
     'poor' | 'medium' | 'strong'
   >('poor');
+  const [showOTPModal, setShowOTPModal] = useState(false);
+  const [registeredEmail, setRegisteredEmail] = useState('');
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { isLoading, error } = useAppSelector((state) => state.auth);
+  const { isLoading, error, pendingVerification } = useAppSelector((state) => state.auth);
 
-  const form = useForm<z.infer<typeof registerSchema>>({
+  const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
       firstName: '',
@@ -72,12 +71,10 @@ export function RegisterForm() {
       email: '',
       password: '',
       phone: '',
-      role: 'CUSTOMER', // Default role
-      // agreedToTerms: false
+      role: 'CUSTOMER',
     },
   });
 
-  // Handle password strength calculation
   const handlePasswordChange = (value: string) => {
     if (value.length < 6) {
       setPasswordStrength('poor');
@@ -89,48 +86,51 @@ export function RegisterForm() {
     return value;
   };
 
-  // Handle form submission
   const onSubmit = async (values: RegisterFormValues) => {
     try {
-      // console.log("values", values)
       const payload = {
-        firstName: values.firstName, // Keep firstName separate
-        lastName: values.lastName, // Keep lastName separate
+        firstName: values.firstName,
+        lastName: values.lastName,
         email: values.email,
         password: values.password,
-        roles: [values.role], // Wrap role in an array
+        roles: [values.role],
         phone: values.phone,
       };
 
-      let resultAction = await dispatch(registerUser(payload));
+      const resultAction = await dispatch(registerUser(payload));
+      
       if (registerUser.fulfilled.match(resultAction)) {
-        toast.success(
-          resultAction.payload.message || 'Registration successful!'
-        );
-
-        // Get the user's roles from the response
-        const userRoles = resultAction.payload.user?.roles || [];
-
-        setTimeout(() => {
-          // Redirect based on role
-          if (userRoles.includes('ADMIN')) {
-            router.push('/dashboard');
-          } else if (userRoles.includes('CUSTOMER')) {
-            router.push('/stores');
-          } else {
-            // Default fallback route for any other role
-            router.push('/login');
-          }
-        }, 800);
+        toast.success('Registration successful! Please verify your email with OTP.');
+        setRegisteredEmail(values.email);
+        setShowOTPModal(true);
       }
     } catch (err) {
-      // Error is handled by the slice
       toast.error('Registration failed. Please try again.');
       console.error('Registration failed:', err);
     }
   };
 
-  // Clear any errors when form changes
+  const handleOTPVerificationSuccess = (userRoles: string[]) => {
+    setShowOTPModal(false);
+    // Redirect based on role
+    if (userRoles.includes('ADMIN')) {
+      router.push('/dashboard');
+    } else if (userRoles.includes('CUSTOMER')) {
+      router.push('/stores');
+    } else {
+      router.push('/login');
+    }
+  };
+
+  const handleResendOTP = async () => {
+    try {
+      await dispatch(resendSignupOTP(registeredEmail));
+      toast.success('OTP resent successfully!');
+    } catch (error) {
+      toast.error('Failed to resend OTP. Please try again.');
+    }
+  };
+
   const handleFormChange = () => {
     if (error) {
       dispatch(clearErrors());
@@ -144,7 +144,7 @@ export function RegisterForm() {
         autoClose={3000}
         hideProgressBar={false}
       />
-      <Card className="border-none shadow-lg  sm:w-full md:w-full lg:w-[600px] mx-auto">
+      <Card className="border-none shadow-lg sm:w-full md:w-full lg:w-[600px] mx-auto">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl text-center">Sign up</CardTitle>
           <div className="text-center">
@@ -157,7 +157,7 @@ export function RegisterForm() {
           </div>
         </CardHeader>
         <CardContent>
-          <Form {...form}>
+         <Form {...form}>
             <form
               onSubmit={form.handleSubmit(onSubmit)}
               onChange={handleFormChange}
@@ -319,6 +319,16 @@ export function RegisterForm() {
           </Form>
         </CardContent>
       </Card>
+
+      {/* OTP Verification Modal */}
+      {showOTPModal && (
+        <OTPVerificationModal
+          email={registeredEmail}
+          onVerifySuccess={handleOTPVerificationSuccess}
+          onResendOTP={handleResendOTP}
+          onClose={() => setShowOTPModal(false)}
+        />
+      )}
     </>
   );
 }

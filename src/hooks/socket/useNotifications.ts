@@ -12,6 +12,7 @@ import {
   Notification,
   addNotification,
   FetchNotificationsParams,
+  
 } from '@/store/slices/socket/socketSlice';
 import { emitSocketEvent } from '@/lib/socket';
 
@@ -22,7 +23,7 @@ interface UseNotificationsOptions {
 }
 
 export const useNotifications = (options: UseNotificationsOptions = {}) => {
-  const { workspaceId, autoFetch = true, limit = 10 } = options;
+  const { workspaceId, autoFetch = true, limit = 100 } = options;
 
   const dispatch = useDispatch<AppDispatch>();
   const {
@@ -247,6 +248,9 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
     },
     [notifications]
   );
+
+  
+
 
   return {
     // State

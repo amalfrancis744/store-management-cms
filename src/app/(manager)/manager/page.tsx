@@ -16,6 +16,8 @@ import { AppDispatch, RootState } from '@/store';
 import { useEffect, useState } from 'react';
 import { fetchWorkspaceById } from '@/store/slices/admin/workspaceSlice';
 import { format } from 'date-fns';
+import { useNotifications } from '@/hooks/socket/useNotifications';
+import { updateOrderStatesBySocket } from '@/store/slices/manager/customerOrderSlice';
 
 export default function Manager() {
   const [isMounted, setIsMounted] = useState(false);
@@ -24,6 +26,9 @@ export default function Manager() {
   const { currentWorkspace, isLoading, error } = useSelector(
     (state: RootState) => state.workspace
   );
+
+
+
 
   useEffect(() => {
     setIsMounted(true);

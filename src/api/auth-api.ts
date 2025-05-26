@@ -10,6 +10,7 @@ interface AuthResponse {
     refreshToken: string;
   };
   message: string;
+  result?: any; 
 }
 
 interface EncryptedResponse {
@@ -42,6 +43,8 @@ export const authAPI = {
         const message = decryptedData.message;
 
         const { token, refreshToken, user } = decryptedData.data;
+
+
 
         const workspaceId = user.workspaceId;
 
@@ -107,8 +110,11 @@ export const authAPI = {
     }
   },
 
-  // Register user
-  register: async (userData: {
+  // w
+
+
+
+register: async (userData: {
     firstName: string;
     lastName: string;
     email: string;
@@ -132,31 +138,128 @@ export const authAPI = {
       );
       console.log('Response from register API:', response.data);
 
-      const decryptedData = decryptResponse<AuthResponse>(
-        response.data as EncryptedResponse
-      );
-      console.log('Decrypted Data from register API:', decryptedData);
+      // Registration now just returns success message, no user data/tokens
+      if (response.data.iv && response.data.encryptedData) {
+        const decryptedData = decryptResponse<{ message: string; email: string }>(
+          response.data as EncryptedResponse
+        );
+        console.log('Decrypted Data from register API:', decryptedData);
 
-      const { token, refreshToken, user } = decryptedData.userData;
-      const message = decryptedData.message;
-
-      // Determine active role for new user
-      const activeRole = user.roles.includes('ADMIN')
-        ? 'ADMIN'
-        : user.roles.includes('CUSTOMER')
-          ? 'CUSTOMER'
-          : user.roles[0];
-
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      localStorage.setItem('refreshToken', refreshToken);
-      localStorage.setItem('activeRole', activeRole);
-
-      return { data: { user, token, message, activeRole } };
+        return { 
+          data: { 
+            message: decryptedData.message,
+            email: decryptedData.email || userData.email,
+            requiresOTP: true
+          } 
+        };
+      } else {
+        // Handle unencrypted response (fallback)
+        return { 
+          data: { 
+            message: response.data.message || 'Registration successful. Please verify your email with OTP.',
+            email: userData.email,
+            requiresOTP: true
+          } 
+        };
+      }
     } catch (error) {
       throw error;
     }
   },
+
+  // Verify signup OTP
+  verifySignupOTP: async (email: string, otp: string) => {
+    try {
+      // const encryptedPayload = encryptPayload({
+      //   email,
+      //   otp,
+      // });
+
+      const response = await axiosInstance.post(
+        '/auth/signup-verify-otp',
+      {
+        email,
+        otp
+      }
+      );
+
+      if (response.data.iv && response.data.encryptedData) {
+        const decryptedData = decryptResponse<AuthResponse>(
+          response.data as EncryptedResponse
+        );
+        console.log('Decrypted OTP verification data:', decryptedData);
+
+
+
+        const { token, refreshToken, user } = decryptedData.result || decryptedData.data;
+        const message = decryptedData.message;
+
+        // Determine active role
+        const activeRole = user.roles.includes('ADMIN')
+          ? 'ADMIN'
+          : user.roles.includes('CUSTOMER')
+            ? 'CUSTOMER'
+            : user.roles[0];
+
+        // Store auth tokens, user data, and active role
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('refreshToken', refreshToken);
+        localStorage.setItem('activeRole', activeRole);
+
+        if (user.workspaceId) {
+          localStorage.setItem('workspaceId', user.workspaceId);
+        }
+
+        return { data: { user, token, message, activeRole } };
+      } else {
+        // Handle unencrypted response (fallback)
+        const { token, refreshToken, user } = response.data.data;
+        const message = response.data.message;
+
+        const activeRole = user.roles.includes('ADMIN')
+          ? 'ADMIN'
+          : user.roles.includes('CUSTOMER')
+            ? 'CUSTOMER'
+            : user.roles[0];
+
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(user));
+        localStorage.setItem('refreshToken', refreshToken);
+        localStorage.setItem('activeRole', activeRole);
+
+        return { data: { user, token, message, activeRole } };
+      }
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Resend signup OTP
+  resendSignupOTP: async (email: string) => {
+    try {
+      const encryptedPayload = encryptPayload({ email });
+      
+      const response = await axiosInstance.post(
+        '/auth/resend-signup-otp', // Assuming this endpoint exists
+        encryptedPayload
+      );
+
+      if (response.data.iv && response.data.encryptedData) {
+        const decryptedData = decryptResponse<{ message: string }>(
+          response.data as EncryptedResponse
+        );
+        return { data: { message: decryptedData.message } };
+      } else {
+        return { data: { message: response.data.message } };
+      }
+    } catch (error) {
+      throw error;
+    }
+  },
+
+
+
 
   // Logout user
   logout: async () => {

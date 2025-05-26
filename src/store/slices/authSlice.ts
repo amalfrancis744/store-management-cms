@@ -10,6 +10,11 @@ interface AuthState {
   activeRole: string | null;
   workspaceId: string | null;
   token: string | null;
+    // OTP verification states
+  pendingVerification: {
+    email: string | null;
+    isRequired: boolean;
+  };
 }
 
 // Safely parse localStorage
@@ -54,6 +59,11 @@ const initialState: AuthState = {
         getInitialActiveRole(safeParseJson(localStorage.getItem('user')))
       : null,
   token: null,
+    // OTP verification states
+   pendingVerification: {
+    email: null,
+    isRequired: false,
+  },
 };
 
 // New action to switch active role
@@ -172,6 +182,45 @@ export const loginUser = createAsyncThunk(
   }
 );
 
+// export const registerUser = createAsyncThunk(
+//   'auth/register',
+//   async (
+//     userData: {
+//       firstName: string;
+//       lastName: string;
+//       email: string;
+//       password: string;
+//       roles: string[];
+//       phone: string;
+//     },
+//     { rejectWithValue }
+//   ) => {
+//     try {
+//       const response: any = await authAPI.register(userData);
+
+//       // Store the token if provided
+//       if (response.data.token) {
+//         localStorage.setItem('token', response.data.token);
+//       }
+
+//       // Store user data
+//       if (response.data.user) {
+//         localStorage.setItem('user', JSON.stringify(response.data.user));
+//       }
+
+//       return response.data;
+//     } catch (error: any) {
+//       return rejectWithValue(
+//         error.response?.data?.message || 'Registration failed'
+//       );
+//     }
+//   }
+// );
+
+// Modified logout action to clear all persisted data
+
+
+
 export const registerUser = createAsyncThunk(
   'auth/register',
   async (
@@ -187,6 +236,27 @@ export const registerUser = createAsyncThunk(
   ) => {
     try {
       const response: any = await authAPI.register(userData);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Registration failed'
+      );
+    }
+  }
+);
+
+// New action to verify signup OTP
+export const verifySignupOTP = createAsyncThunk(
+  'auth/verifySignupOTP',
+  async (
+    { email, otp }: { email: string; otp: string },
+    { rejectWithValue }
+  ) => {
+
+    console.log('Verifying OTP for email:', email, 'with OTP:', otp);
+    try {
+      const response: any = await authAPI.verifySignupOTP(email, otp);
+      console.log('OTP verification response:', response);
 
       // Store the token if provided
       if (response.data.token) {
@@ -201,13 +271,29 @@ export const registerUser = createAsyncThunk(
       return response.data;
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data?.message || 'Registration failed'
+        error.response?.data?.message || 'OTP verification failed'
       );
     }
   }
 );
 
-// Modified logout action to clear all persisted data
+// New action to resend signup OTP
+export const resendSignupOTP = createAsyncThunk(
+  'auth/resendSignupOTP',
+  async (email: string, { rejectWithValue }) => {
+    try {
+      const response: any = await authAPI.resendSignupOTP(email);
+      return response.data;
+    } catch (error: any) {
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to resend OTP'
+      );
+    }
+  }
+);
+
+
+
 export const logoutUser = createAsyncThunk(
   'auth/logout',
   async (_, { rejectWithValue }) => {
@@ -403,24 +489,88 @@ const authSlice = createSlice({
     });
 
     // Register
+    // builder.addCase(registerUser.pending, (state) => {
+    //   state.isLoading = true;
+    //   state.error = null;
+    // });
+    // builder.addCase(registerUser.fulfilled, (state, action) => {
+    //   state.isLoading = false;
+    //   state.user = action.payload.user;
+    //   state.error = null;
+    //   // Set active role on registration
+    //   state.activeRole = getInitialActiveRole(action.payload.user);
+    //   if (state.activeRole && typeof window !== 'undefined') {
+    //     localStorage.setItem('activeRole', state.activeRole);
+    //   }
+    // });
+    // builder.addCase(registerUser.rejected, (state, action) => {
+    //   state.isLoading = false;
+    //   state.error = action.payload as string;
+    // });
+
+     // Register - Updated to handle OTP requirement
+     // Register - Updated to handle OTP requirement
     builder.addCase(registerUser.pending, (state) => {
       state.isLoading = true;
       state.error = null;
     });
     builder.addCase(registerUser.fulfilled, (state, action) => {
       state.isLoading = false;
-      state.user = action.payload.user;
       state.error = null;
-      // Set active role on registration
-      state.activeRole = getInitialActiveRole(action.payload.user);
-      if (state.activeRole && typeof window !== 'undefined') {
-        localStorage.setItem('activeRole', state.activeRole);
-      }
+      // Set pending verification state
+      state.pendingVerification = {
+        email: action.payload.email,
+        isRequired: action.payload.requiresOTP || true,
+      };
+      // Don't set user data yet - wait for OTP verification
     });
     builder.addCase(registerUser.rejected, (state, action) => {
       state.isLoading = false;
       state.error = action.payload as string;
     });
+
+    // Verify Signup OTP
+    builder.addCase(verifySignupOTP.pending, (state) => {
+      state.isLoading = true;
+      state.error = null;
+    });
+    builder.addCase(verifySignupOTP.fulfilled, (state, action) => {
+      state.isLoading = false;
+      state.user = action.payload.user;
+      state.error = null;
+      // Clear pending verification
+      state.pendingVerification = {
+        email: null,
+        isRequired: false,
+      };
+      // Set active role after verification
+      state.activeRole = getInitialActiveRole(action.payload.user);
+      if (state.activeRole && typeof window !== 'undefined') {
+        localStorage.setItem('activeRole', state.activeRole);
+      }
+    });
+    builder.addCase(verifySignupOTP.rejected, (state, action) => {
+      state.isLoading = false;
+      state.error = action.payload as string;
+    });
+
+    // Resend Signup OTP
+    builder.addCase(resendSignupOTP.pending, (state) => {
+      state.isLoading = true;
+      state.error = null;
+    });
+    builder.addCase(resendSignupOTP.fulfilled, (state) => {
+      state.isLoading = false;
+      state.error = null;
+    });
+    builder.addCase(resendSignupOTP.rejected, (state, action) => {
+      state.isLoading = false;
+      state.error = action.payload as string;
+    });
+
+
+
+    
 
     // Logout
     builder.addCase(logoutUser.pending, (state) => {

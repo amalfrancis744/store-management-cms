@@ -107,6 +107,23 @@ export interface StaffMember {
   // Add other properties as needed
 }
 
+// Socket notification data interface
+interface SocketNotificationData {
+  title: string;
+  message: string;
+  data: {
+    id: string;
+    status: string;
+    userId: string;
+    workspaceId: number;
+    notificationId: string;
+    type: string;
+    createdAt: string;
+  };
+  id: string;
+  read: boolean;
+}
+
 // Async thunks
 export const fetchCustomerOrders = createAsyncThunk(
   'orders/fetchCustomerOrders',
@@ -205,10 +222,91 @@ const orderSlice = createSlice({
     clearCurrentOrder: (state) => {
       state.currentOrder = null;
     },
+    // updateOrders: (state, action: PayloadAction<Order[]>) => {
+    //   state.orders = action.payload;{...state.orders, ...action.payload};
+    // },
     resetOrderStatus: (state) => {
       state.status = 'idle';
       state.error = null;
     },
+  // In your orderSlice.ts
+updateOrderStatesBySocket: (state, action: PayloadAction<any[]>) => {
+  const notifications = action.payload;
+  
+  notifications.forEach(notification => {
+    // Check if this is an ORDER_UPDATE notification
+    if (notification.data?.type === 'ORDER_UPDATE') {
+      console.log('Processing ORDER_UPDATE notification:', notification.data);
+      
+      // Extract order data from notification
+      const { id: orderId, status: newStatus } = notification.data;
+      const updatedAt = notification.data.createdAt || new Date().toISOString();
+      
+      // Update the order in the orders array
+      const orderIndex = state.orders.findIndex(order => order.id === orderId);
+      if (orderIndex !== -1) {
+        console.log(`Updating order ${orderId} status from ${state.orders[orderIndex].status} to ${newStatus}`);
+        state.orders[orderIndex] = {
+          ...state.orders[orderIndex],
+          status: newStatus,
+          updatedAt: updatedAt
+        };
+      } else {
+        console.log(`Order ${orderId} not found in current orders list`);
+      }
+      
+      // Update current order if it matches
+      if (state.currentOrder && state.currentOrder.id === orderId) {
+        console.log(`Updating current order ${orderId} status to ${newStatus}`);
+        state.currentOrder = {
+          ...state.currentOrder,
+          status: newStatus,
+          updatedAt: updatedAt
+        };
+      }
+    }
+    
+    // Handle other notification types for orders if needed
+    else if (notification.title?.includes('Order') || notification.message?.includes('order')) {
+      console.log('Processing order-related notification:', notification);
+      
+      // Try to extract order ID from message or notification data
+      let orderId = null;
+      let newStatus = null;
+      
+      // Extract from message patterns
+      if (notification.message?.includes('Order ') && notification.message?.includes(' updated to ')) {
+        const orderIdMatch = notification.message.match(/Order (\w+) updated to (\w+)/);
+        if (orderIdMatch) {
+          orderId = orderIdMatch[1];
+          newStatus = orderIdMatch[2];
+        }
+      }
+      
+      // If we extracted valid data, update the order
+      if (orderId && newStatus) {
+        const orderIndex = state.orders.findIndex(order => order.id === orderId);
+        if (orderIndex !== -1) {
+          console.log(`Updating order ${orderId} status from pattern match to ${newStatus}`);
+          state.orders[orderIndex] = {
+            ...state.orders[orderIndex],
+            status: newStatus,
+            updatedAt: notification.createdAt || new Date().toISOString()
+          };
+        }
+        
+        // Update current order if it matches
+        if (state.currentOrder && state.currentOrder.id === orderId) {
+          state.currentOrder = {
+            ...state.currentOrder,
+            status: newStatus,
+            updatedAt: notification.createdAt || new Date().toISOString()
+          };
+        }
+      }
+    }
+  });
+},
   },
   extraReducers: (builder) => {
     builder
@@ -292,7 +390,7 @@ const orderSlice = createSlice({
 });
 
 // Export actions
-export const { clearCurrentOrder, resetOrderStatus } = orderSlice.actions;
+export const { clearCurrentOrder, resetOrderStatus, updateOrderStatesBySocket } = orderSlice.actions;
 
 // Selectors
 export const selectAllOrders = (state: RootState) => state.customerOrder.orders;

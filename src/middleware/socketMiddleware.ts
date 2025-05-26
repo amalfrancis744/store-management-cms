@@ -9,6 +9,7 @@ import {
   setLastError,
   Notification,
 } from '@/store/slices/socket/socketSlice';
+import { updateOrderStatesBySocket } from '@/store/slices/manager/customerOrderSlice'; // Import the action
 import { getSocket } from '@/lib/socket';
 
 const MAX_CONNECTION_ATTEMPTS = 3;
@@ -91,6 +92,19 @@ export const socketMiddleware: Middleware = (store) => {
         read: false,
       };
       store.dispatch(addNotification(newNotification));
+
+      // Create a mock notification for order update
+      const orderUpdateNotification = {
+        data: {
+          id: data.id,
+          status: data.status,
+          type: 'ORDER_UPDATE',
+          createdAt: new Date().toISOString(),
+        }
+      };
+      
+      // Dispatch order state update
+      store.dispatch(updateOrderStatesBySocket([orderUpdateNotification]));
     });
 
     socket.on('order:statusUpdated', (payload: any) => {
@@ -108,6 +122,19 @@ export const socketMiddleware: Middleware = (store) => {
         read: false,
       };
       store.dispatch(addNotification(newNotification));
+
+      // Create notification for order update
+      const orderUpdateNotification = {
+        data: {
+          id: payload.orderId,
+          status: payload.status,
+          type: 'ORDER_UPDATE',
+          createdAt: new Date().toISOString(),
+        }
+      };
+      
+      // Dispatch order state update
+      store.dispatch(updateOrderStatesBySocket([orderUpdateNotification]));
     });
 
     socket.on('order:updated', (data: any) => {
@@ -125,6 +152,19 @@ export const socketMiddleware: Middleware = (store) => {
         read: false,
       };
       store.dispatch(addNotification(newNotification));
+
+      // Create notification for order update
+      const orderUpdateNotification = {
+        data: {
+          id: data.id,
+          status: data.status,
+          type: 'ORDER_UPDATE',
+          createdAt: new Date().toISOString(),
+        }
+      };
+      
+      // Dispatch order state update
+      store.dispatch(updateOrderStatesBySocket([orderUpdateNotification]));
     });
 
     socket.on('order:created', (payload: any) => {
@@ -142,6 +182,19 @@ export const socketMiddleware: Middleware = (store) => {
         read: false,
       };
       store.dispatch(addNotification(newNotification));
+
+      // Create notification for order update
+      const orderUpdateNotification = {
+        data: {
+          id: payload.id,
+          status: payload.status || 'PENDING',
+          type: 'ORDER_UPDATE',
+          createdAt: new Date().toISOString(),
+        }
+      };
+      
+      // Dispatch order state update
+      store.dispatch(updateOrderStatesBySocket([orderUpdateNotification]));
     });
 
     // Notification event handler
@@ -160,6 +213,14 @@ export const socketMiddleware: Middleware = (store) => {
         };
 
         store.dispatch(addNotification(notificationWithId));
+
+        // Check if this notification contains order update data
+        if (notification.data && notification.data.type === 'ORDER_UPDATE') {
+          console.log('Processing ORDER_UPDATE notification:', notification.data);
+          
+          // Dispatch order state update
+          store.dispatch(updateOrderStatesBySocket([notification]));
+        }
 
         // Use correct toast method based on type
         switch (notification.type) {

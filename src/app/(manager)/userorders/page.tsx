@@ -7,6 +7,7 @@ import {
   selectOrderStatus,
   selectOrderError,
   assignStaffToOrder,
+  updateOrderStatesBySocket,
 } from '@/store/slices/manager/customerOrderSlice';
 import type { AppDispatch, RootState } from '@/store';
 import { AgGridReact } from 'ag-grid-react';
@@ -55,6 +56,8 @@ import {
 // Icons
 import { Eye, User, Search, Filter, Calendar } from 'lucide-react';
 import { useStaffMembers } from '@/api/manager/getAllStaff-api';
+import { useNotifications } from '@/hooks/socket/useNotifications';
+import { useOrderNotifications } from '@/hooks/socket/helperSocket';
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const myTheme = themeQuartz.withPart(iconSetMaterial).withParams({
@@ -159,8 +162,15 @@ const OrdersPage = () => {
     }
   };
 
+
+
+  
+
+  
+
   useEffect(() => {
     fetchOrders();
+    useOrderNotifications()
   }, [dispatch, workspaceId]);
 
   // Format date for display
