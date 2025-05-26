@@ -1,18 +1,33 @@
 'use client';
 
-import { useState, useRef, useMemo, useCallback } from 'react';
+import { useState, useRef, useMemo, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSelector } from 'react-redux';
-import { RootState } from '@/store';
+import { useSelector, useDispatch } from 'react-redux';
+import { RootState, AppDispatch } from '@/store';
 import {
-  useStaffDashboard,
-  useChangeOrderStatus,
-} from '@/api/staff/getStaffOrderById-api';
+  fetchStaffDashboard,
+  changeOrderStatus,
+  setSelectedOrder,
+  clearOrderStatusError,
+  clearDashboardError,
+  updateOrderStatusOptimistic,
+  revertOrderStatusUpdate,
+  selectStaffDashboardData,
+  selectStaffOrders,
+  selectStaffStats,
+  selectWorkspaceDetails,
+  selectSelectedOrder,
+  selectDashboardLoading,
+  selectOrderStatusLoading,
+  selectStaffErrors,
+  Order,
+  OrderItem,
+} from '@/store/slices/staff/staffSlice';
 import { AgGridReact } from 'ag-grid-react';
 import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community';
 import { themeQuartz, iconSetMaterial } from 'ag-grid-community';
 import { format } from 'date-fns';
-import { ArrowLeft, Eye } from 'lucide-react';
+import { ArrowLeft, Eye, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ToastContainer, toast } from 'react-toastify';
 
@@ -55,52 +70,6 @@ const myTheme = themeQuartz.withPart(iconSetMaterial).withParams({
   wrapperBorderRadius: 8,
 });
 
-// Interface definitions
-interface OrderItem {
-  quantity: number;
-  price: number;
-  variant: {
-    id: string;
-    title: string;
-    sku: string;
-    price: number;
-    stock: number;
-    color: string;
-    size: string;
-  };
-}
-
-interface Order {
-  id: string;
-  status: string;
-  totalAmount: number;
-  placedAt: string;
-  items: OrderItem[];
-}
-
-interface WorkspaceDetails {
-  id: number;
-  name: string;
-  images: string[];
-  location: string | null;
-  description: string;
-  createdAt: string;
-}
-
-interface StaffDashboardResponse {
-  availabilityStatus: boolean;
-  workspaceDetails: WorkspaceDetails;
-  stats: {
-    totalOrders: number;
-    ordersToday: number;
-    processingOrders: number;
-    completedOrders: number;
-    successfulDeliveries: number;
-    totalRevenue: number;
-  };
-  assignedOrders: Order[];
-}
-
 // Status color mappings
 const statusColors: Record<string, string> = {
   PENDING: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200',
@@ -131,17 +100,40 @@ const getSelectableStatuses = (currentStatus: string): string[] => {
 
 export default function OrderListPage() {
   const router = useRouter();
+  const dispatch = useDispatch<AppDispatch>();
+  
+  // Redux selectors
   const workspaceId = useSelector((state: RootState) => state.auth.workspaceId);
+  const dashboardData = useSelector(selectStaffDashboardData);
+  const orders = useSelector(selectStaffOrders);
+  const stats = useSelector(selectStaffStats);
+  const workspaceDetails = useSelector(selectWorkspaceDetails);
+  const selectedOrder = useSelector(selectSelectedOrder);
+  const isDashboardLoading = useSelector(selectDashboardLoading);
+  const isUpdatingOrderStatus = useSelector(selectOrderStatusLoading);
+  const errors = useSelector(selectStaffErrors);
 
-  const { data, isLoading, error, refetch } = useStaffDashboard(
-    workspaceId ?? ''
-  );
-  const changeOrderStatusMutation = useChangeOrderStatus();
-
-  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isOrderDetailsOpen, setIsOrderDetailsOpen] = useState(false);
-
   const gridRef = useRef<AgGridReact>(null);
+
+  // Fetch dashboard data on component mount or when workspaceId changes
+  useEffect(() => {
+    if (workspaceId) {
+      dispatch(fetchStaffDashboard(workspaceId));
+    }
+  }, [dispatch, workspaceId]);
+
+  // Handle errors with toast notifications
+  useEffect(() => {
+    if (errors.dashboard) {
+      toast.error(errors.dashboard);
+      dispatch(clearDashboardError());
+    }
+    if (errors.orderStatus) {
+      toast.error(errors.orderStatus);
+      dispatch(clearOrderStatusError());
+    }
+  }, [errors, dispatch]);
 
   // Format date
   const formatDate = useCallback((dateString: string) => {
@@ -159,9 +151,9 @@ export default function OrderListPage() {
 
   // Handle view order details
   const handleViewOrderDetails = useCallback((order: Order) => {
-    setSelectedOrder(order);
+    dispatch(setSelectedOrder(order));
     setIsOrderDetailsOpen(true);
-  }, []);
+  }, [dispatch]);
 
   // Handle update order status
   const handleUpdateOrderStatus = useCallback(
@@ -170,33 +162,61 @@ export default function OrderListPage() {
         toast.error('Workspace ID is missing');
         return;
       }
+
+      // Get current order to store original status for potential revert
+      const currentOrder = orders.find(order => order.id === orderId);
+      const originalStatus = currentOrder?.status;
+
+      if (!originalStatus) {
+        toast.error('Unable to find order');
+        return;
+      }
+
       try {
-        const response = await changeOrderStatusMutation.mutateAsync({
+        // Optimistic update
+        dispatch(updateOrderStatusOptimistic({ orderId, newStatus }));
+        
+        // Dispatch the async action
+        const result = await dispatch(changeOrderStatus({
           workspaceId,
           orderId,
           status: newStatus,
-        });
-        console.log('Order status updated:', response.data.message);
-        toast.success(
-          response?.data?.message || `Order status updated to ${newStatus}`
-        );
+        }));
 
-        await refetch();
-        setIsOrderDetailsOpen(false);
+        if (changeOrderStatus.fulfilled.match(result)) {
+          toast.success(result.payload.message);
+          setIsOrderDetailsOpen(false);
+        } else if (changeOrderStatus.rejected.match(result)) {
+          // Revert optimistic update on error
+          dispatch(revertOrderStatusUpdate({ orderId, originalStatus }));
+          throw new Error(result.payload as string);
+        }
       } catch (error: any) {
-        const errorMessage = error.message.includes('CORS')
+        // Revert optimistic update on error
+        dispatch(revertOrderStatusUpdate({ orderId, originalStatus }));
+        
+        const errorMessage = error.message?.includes('CORS')
           ? 'CORS error: Unable to connect to the server. Please contact support.'
           : error.message || 'Failed to update order status';
         toast.error(errorMessage);
       }
     },
-    [changeOrderStatusMutation, workspaceId, refetch]
+    [dispatch, workspaceId, orders]
   );
 
   // Close order details dialog
   const handleCloseOrderDetails = useCallback(() => {
     setIsOrderDetailsOpen(false);
-  }, []);
+    dispatch(setSelectedOrder(null));
+  }, [dispatch]);
+
+  // Refresh dashboard data
+  const handleRefreshData = useCallback(() => {
+    if (workspaceId) {
+      dispatch(fetchStaffDashboard(workspaceId));
+      toast.info('Refreshing data...');
+    }
+  }, [dispatch, workspaceId]);
 
   // Check if order status can be updated further
   const isStatusFinal = useCallback((status: string) => {
@@ -245,7 +265,7 @@ export default function OrderListPage() {
                 handleUpdateOrderStatus(order.id, value)
               }
               value={order.status}
-              disabled={changeOrderStatusMutation.isLoading}
+              disabled={isUpdatingOrderStatus}
             >
               <SelectTrigger className="w-[120px] h-8 text-xs">
                 <SelectValue placeholder="Update Status" />
@@ -269,7 +289,7 @@ export default function OrderListPage() {
     [
       handleViewOrderDetails,
       handleUpdateOrderStatus,
-      changeOrderStatusMutation.isLoading,
+      isUpdatingOrderStatus,
       getSelectableStatusesForOrder,
     ]
   );
@@ -342,19 +362,6 @@ export default function OrderListPage() {
     []
   );
 
-  // Orders from the API response
-  const orders = data?.assignedOrders || [];
-
-  // Stats from the API response
-  const stats = data?.stats || {
-    totalOrders: 0,
-    ordersToday: 0,
-    processingOrders: 0,
-    completedOrders: 0,
-    successfulDeliveries: 0,
-    totalRevenue: 0,
-  };
-
   return (
     <div className="p-6">
       <ToastContainer />
@@ -365,9 +372,20 @@ export default function OrderListPage() {
           </Button>
           <h1 className="text-2xl font-bold">Order Management</h1>
         </div>
-        <div className="text-sm text-gray-500">
-          {data?.workspaceDetails?.name && (
-            <span>Workspace: {data.workspaceDetails.name}</span>
+        <div className="flex items-center gap-4">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleRefreshData}
+            disabled={isDashboardLoading}
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isDashboardLoading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+          {workspaceDetails?.name && (
+            <div className="text-sm text-gray-500">
+              Workspace: {workspaceDetails.name}
+            </div>
           )}
         </div>
       </div>
@@ -379,7 +397,7 @@ export default function OrderListPage() {
             <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">{stats.totalOrders}</p>
+            <p className="text-2xl font-bold">{stats?.totalOrders || 0}</p>
           </CardContent>
         </Card>
         <Card>
@@ -387,7 +405,7 @@ export default function OrderListPage() {
             <CardTitle className="text-sm font-medium">Orders Today</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">{stats.ordersToday}</p>
+            <p className="text-2xl font-bold">{stats?.ordersToday || 0}</p>
           </CardContent>
         </Card>
         <Card>
@@ -395,7 +413,7 @@ export default function OrderListPage() {
             <CardTitle className="text-sm font-medium">Processing</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">{stats.processingOrders}</p>
+            <p className="text-2xl font-bold">{stats?.processingOrders || 0}</p>
           </CardContent>
         </Card>
         <Card>
@@ -403,7 +421,7 @@ export default function OrderListPage() {
             <CardTitle className="text-sm font-medium">Completed</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">{stats.completedOrders}</p>
+            <p className="text-2xl font-bold">{stats?.completedOrders || 0}</p>
           </CardContent>
         </Card>
         <Card>
@@ -413,7 +431,7 @@ export default function OrderListPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">{stats.successfulDeliveries}</p>
+            <p className="text-2xl font-bold">{stats?.successfulDeliveries || 0}</p>
           </CardContent>
         </Card>
         <Card>
@@ -422,19 +440,27 @@ export default function OrderListPage() {
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold">
-              ${stats.totalRevenue.toFixed(2)}
+              ${(stats?.totalRevenue || 0).toFixed(2)}
             </p>
           </CardContent>
         </Card>
       </div>
 
-      {isLoading ? (
+      {isDashboardLoading ? (
         <div className="flex justify-center items-center h-64">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
         </div>
-      ) : error ? (
+      ) : errors.dashboard ? (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-          <p>Error loading orders. Please try again.</p>
+          <p>Error loading orders: {errors.dashboard}</p>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleRefreshData}
+            className="mt-2"
+          >
+            Try Again
+          </Button>
         </div>
       ) : orders.length === 0 ? (
         <div className="bg-gray-100 border border-gray-300 rounded-md p-6 text-center">
@@ -571,34 +597,35 @@ export default function OrderListPage() {
                       . No further status updates are allowed.
                     </div>
                   ) : (
-                    <div className="flex gap-2">
+                    <div className="flex gap-2 flex-wrap">
                       {Object.keys(statusColors).map((status) => {
                         const selectableStatuses = getSelectableStatuses(
                           selectedOrder.status
                         );
+                        const isCurrentStatus = selectedOrder.status === status;
+                        const isSelectable = selectableStatuses.includes(status);
+                        
                         return (
                           <Button
                             key={status}
-                            variant={
-                              selectedOrder.status === status
-                                ? 'default'
-                                : 'outline'
-                            }
+                            variant={isCurrentStatus ? 'default' : 'outline'}
                             size="sm"
                             onClick={() =>
                               handleUpdateOrderStatus(selectedOrder.id, status)
                             }
                             className={
-                              selectedOrder.status === status
+                              isCurrentStatus
                                 ? ''
                                 : 'hover:bg-gray-100'
                             }
                             disabled={
-                              changeOrderStatusMutation.isLoading ||
-                              !selectableStatuses.includes(status)
+                              isUpdatingOrderStatus ||
+                              !isSelectable ||
+                              isCurrentStatus
                             }
                           >
                             {status}
+                            {isCurrentStatus && ' (Current)'}
                           </Button>
                         );
                       })}

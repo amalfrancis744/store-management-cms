@@ -3,7 +3,7 @@ import { decryptResponse, encryptPayload } from '@/utils/encryptionHelper';
 
 const baseURL =
   process.env.NEXT_PUBLIC_API_BASE_URL ||
-  'https://back-end-71mc.onrender.com/api/v1';
+  'https://back-end-861q.onrender.com/api/v1';
 
 const axiosInstance = axios.create({
   baseURL,

@@ -22,6 +22,7 @@ import userProfileReducer from './slices/customer/userProfileSlice';
 import customerOrderReducer from './slices/manager/customerOrderSlice';
 import socketReducer from './slices/socket/socketSlice';
 import notificationReducer from './slices/notification/notificationSlice';
+import staffReducer from './slices/staff/staffSlice';
 
 import { ThunkAction } from 'redux-thunk';
 import socketMiddleware from '@/middleware/socketMiddleware';
@@ -114,6 +115,14 @@ const notificationPersistConfig = {
   storage,
   whitelist: ['permission', 'fcmToken'], // Persist these fields
 };
+
+// Persist config for staff
+const staffPersistConfig = {
+  key: 'staff',
+  storage,
+  // Only persist selected order and last fetched workspace ID
+  whitelist: ['selectedOrder', 'lastFetchedWorkspaceId'],
+};
 // Wrap reducers with persistReducer
 const persistedAuthReducer = persistReducer(authPersistConfig, authReducer);
 const persistedWorkspaceReducer = persistReducer(
@@ -156,6 +165,14 @@ const persistedNotificationReducer = persistReducer(
   notificationReducer
 );
 
+const persistedStaffReducer = persistReducer(
+  staffPersistConfig,
+  staffReducer
+);
+
+
+
+
 // Combine all reducers
 const appReducer = combineReducers({
   auth: persistedAuthReducer,
@@ -170,6 +187,7 @@ const appReducer = combineReducers({
   customerOrder: persistedCustomerOrderReducer,
   socket: persistedSocketReducer,
   notification: persistedNotificationReducer,
+  staff: persistedStaffReducer,
 });
 
 // Root reducer with reset functionality
@@ -188,6 +206,7 @@ const rootReducer = (state: any, action: any) => {
     storage.removeItem('persist:userProfile');
     storage.removeItem('persist:customerOrder');
     storage.removeItem('persist:socket');
+    storage.removeItem('persist:staff'); 
     // storage.removeItem('persist:notification'); // Add this line
 
     // Return undefined to let the reducers return their initial state

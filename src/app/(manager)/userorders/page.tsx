@@ -56,8 +56,6 @@ import {
 // Icons
 import { Eye, User, Search, Filter, Calendar } from 'lucide-react';
 import { useStaffMembers } from '@/api/manager/getAllStaff-api';
-import { useNotifications } from '@/hooks/socket/useNotifications';
-import { useOrderNotifications } from '@/hooks/socket/helperSocket';
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const myTheme = themeQuartz.withPart(iconSetMaterial).withParams({
@@ -132,6 +130,32 @@ const paymentStatusColors: Record<string, string> = {
   FAILED: 'bg-red-100 text-red-800',
 };
 
+
+// Custom hook for order notifications - moved outside component
+const useOrderNotifications = () => {
+  const dispatch = useDispatch();
+  const notifications = useSelector((state: RootState) => state.socket.notifications);
+  
+  useEffect(() => {
+    // Filter for unprocessed order-related notifications
+    const orderNotifications = notifications.filter(notification => 
+      !notification.processed && (
+        notification.data?.type === 'ORDER_UPDATE' ||
+        notification.title?.includes('Order') ||
+        notification.message?.includes('order')
+      )
+    );
+    
+    if (orderNotifications.length > 0) {
+      console.log('Processing order notifications:', orderNotifications);
+      dispatch(updateOrderStatesBySocket(orderNotifications));
+      
+      // Mark notifications as processed (you'll need to add this action to your socket slice)
+      // dispatch(markNotificationsAsProcessed(orderNotifications.map(n => n.id)));
+    }
+  }, [notifications, dispatch]);
+};
+
 const OrdersPage = () => {
   const dispatch = useDispatch<AppDispatch>();
   const orders = useSelector(selectAllOrders);
@@ -169,8 +193,9 @@ const OrdersPage = () => {
   
 
   useEffect(() => {
+
     fetchOrders();
-    useOrderNotifications()
+ 
   }, [dispatch, workspaceId]);
 
   // Format date for display
