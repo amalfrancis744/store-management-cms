@@ -163,51 +163,118 @@ const staffSlice = createSlice({
       return initialState;
     },
 
-    // Update order status optimistically (for immediate UI feedback)
-    updateOrderStatusOptimistic: (
-      state,
-      action: PayloadAction<{ orderId: string; newStatus: string }>
-    ) => {
-      const { orderId, newStatus } = action.payload;
+    // Add a new assigned order to the dashboard data
+     addNewAssignedOrder: (state, action: PayloadAction<Order>) => {
+    if (state.dashboardData) {
+      // Add the new order to the beginning of the array
+      state.dashboardData.assignedOrders = [
+        action.payload,
+        ...state.dashboardData.assignedOrders
+      ];
       
-      // Update in dashboard orders
-      if (state.dashboardData?.assignedOrders) {
-        const orderIndex = state.dashboardData.assignedOrders.findIndex(
-          (order) => order.id === orderId
-        );
-        if (orderIndex !== -1) {
-          state.dashboardData.assignedOrders[orderIndex].status = newStatus;
+      // Update stats
+      state.dashboardData.stats = {
+        ...state.dashboardData.stats,
+        totalOrders: state.dashboardData.stats.totalOrders + 1,
+        ordersToday: state.dashboardData.stats.ordersToday + 1,
+        processingOrders: state.dashboardData.stats.processingOrders + 1
+      };
+    }
+  },
+
+
+
+   updateOrderStatusOptimistic: (state, action: PayloadAction<{orderId: string, newStatus: string}>) => {
+    const { orderId, newStatus } = action.payload;
+    
+    if (state.dashboardData?.assignedOrders) {
+      const orderIndex = state.dashboardData.assignedOrders.findIndex(
+        (order) => order.id === orderId
+      );
+      
+      if (orderIndex !== -1) {
+        const oldStatus = state.dashboardData.assignedOrders[orderIndex].status;
+        state.dashboardData.assignedOrders[orderIndex].status = newStatus;
+        
+        // Update stats based on status change
+        if (state.dashboardData.stats) {
+          let stats = {...state.dashboardData.stats};
+          
+          // Decrement old status count
+          if (oldStatus === 'PROCESSING') {
+            stats.processingOrders = Math.max(0, stats.processingOrders - 1);
+          } else if (oldStatus === 'DELIVERY') {
+            // Handle if you track DELIVERY status separately
+          }
+          
+          // Increment new status count
+          if (newStatus === 'PROCESSING') {
+            stats.processingOrders = (stats.processingOrders || 0) + 1;
+          } else if (newStatus === 'DELIVERED') {
+            stats.completedOrders = (stats.completedOrders || 0) + 1;
+            stats.successfulDeliveries = (stats.successfulDeliveries || 0) + 1;
+          } else if (newStatus === 'CANCELLED') {
+            stats.completedOrders = (stats.completedOrders || 0) + 1;
+          }
+          
+          state.dashboardData.stats = stats;
         }
       }
+    }
+    
+    // Update selected order if it's the one being modified
+    if (state.selectedOrder?.id === orderId) {
+      state.selectedOrder.status = newStatus;
+    }
+  },
 
-      // Update selected order if it matches
-      if (state.selectedOrder?.id === orderId) {
-        state.selectedOrder.status = newStatus;
-      }
-    },
-
-    // Revert optimistic update (in case of error)
-    revertOrderStatusUpdate: (
-      state,
-      action: PayloadAction<{ orderId: string; originalStatus: string }>
-    ) => {
-      const { orderId, originalStatus } = action.payload;
+   // Revert optimistic update if API call fails
+  revertOrderStatusUpdate: (state, action: PayloadAction<{orderId: string, originalStatus: string}>) => {
+    const { orderId, originalStatus } = action.payload;
+    
+    if (state.dashboardData?.assignedOrders) {
+      const orderIndex = state.dashboardData.assignedOrders.findIndex(
+        (order) => order.id === orderId
+      );
       
-      // Revert in dashboard orders
-      if (state.dashboardData?.assignedOrders) {
-        const orderIndex = state.dashboardData.assignedOrders.findIndex(
-          (order) => order.id === orderId
-        );
-        if (orderIndex !== -1) {
-          state.dashboardData.assignedOrders[orderIndex].status = originalStatus;
+      if (orderIndex !== -1) {
+        const currentStatus = state.dashboardData.assignedOrders[orderIndex].status;
+        state.dashboardData.assignedOrders[orderIndex].status = originalStatus;
+        
+        // Revert stats changes
+        if (state.dashboardData.stats) {
+          let stats = {...state.dashboardData.stats};
+          
+          // Revert old status decrement
+          if (currentStatus === 'PROCESSING') {
+            stats.processingOrders = Math.max(0, stats.processingOrders - 1);
+          }
+          
+          // Revert new status increment
+          if (originalStatus === 'PROCESSING') {
+            stats.processingOrders = (stats.processingOrders || 0) + 1;
+          } else if (originalStatus === 'DELIVERED') {
+            stats.completedOrders = Math.max(0, (stats.completedOrders || 0) - 1);
+            stats.successfulDeliveries = Math.max(0, (stats.successfulDeliveries || 0) - 1);
+          } else if (originalStatus === 'CANCELLED') {
+            stats.completedOrders = Math.max(0, (stats.completedOrders || 0) - 1);
+          }
+          
+          state.dashboardData.stats = stats;
         }
       }
+    }
+    
+    // Revert selected order if it's the one being modified
+    if (state.selectedOrder?.id === orderId) {
+      state.selectedOrder.status = originalStatus;
+    }
+  }
 
-      // Revert selected order if it matches
-      if (state.selectedOrder?.id === orderId) {
-        state.selectedOrder.status = originalStatus;
-      }
-    },
+
+   
+   
+ 
   },
   extraReducers: (builder) => {
     // Fetch Staff Dashboard
@@ -273,8 +340,9 @@ export const {
   clearDashboardError,
   clearOrderStatusError,
   resetStaffState,
+  addNewAssignedOrder,
   updateOrderStatusOptimistic,
-  revertOrderStatusUpdate,
+  revertOrderStatusUpdate
 } = staffSlice.actions;
 
 // Selectors

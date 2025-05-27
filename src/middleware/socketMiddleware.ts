@@ -11,6 +11,7 @@ import {
 } from '@/store/slices/socket/socketSlice';
 import { updateOrderStatesBySocket } from '@/store/slices/manager/customerOrderSlice'; // Import the action
 import { getSocket } from '@/lib/socket';
+import { addNewAssignedOrder } from '@/store/slices/staff/staffSlice';
 
 const MAX_CONNECTION_ATTEMPTS = 3;
 
@@ -216,11 +217,44 @@ export const socketMiddleware: Middleware = (store) => {
 
         // Check if this notification contains order update data
         if (notification.data && notification.data.type === 'ORDER_UPDATE') {
-          console.log('Processing ORDER_UPDATE notification:', notification.data);
           
           // Dispatch order state update
           store.dispatch(updateOrderStatesBySocket([notification]));
         }
+
+       else if (notification.title === 'Order Assigned') {
+      console.log('Processing Order Assigned notification');
+      
+      // Extract the order from the notification
+      const orderData = notification.data?.fullOrder;
+
+      console.log('Order data:', orderData);
+      if (orderData) {
+        // Transform the order data to match your Order interface
+        const newOrder: Order = {
+          id: orderData.id,
+          status: orderData.status,
+          totalAmount: orderData.totalAmount,
+          placedAt: orderData.placedAt,
+          items: orderData.items.map((item: any) => ({
+            quantity: item.quantity,
+            price: item.price,
+            variant: {
+              id: item.variantId,
+              title: item.variant.title,
+              sku: item.variant.sku,
+              stock: item.variant.stock,
+              color: item.variant.color,
+              size: item.variant.size
+            }
+          }))
+        };
+        
+        // Dispatch the action to add the new order
+        store.dispatch(addNewAssignedOrder(newOrder));
+      }
+    }
+        
 
         // Use correct toast method based on type
         switch (notification.type) {

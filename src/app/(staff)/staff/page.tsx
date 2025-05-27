@@ -1,18 +1,29 @@
 'use client';
 
-import { useStaffDashboard } from '@/api/staff/getStaffOrderById-api';
-import { RootState } from '@/store';
+import { RootState, AppDispatch } from '@/store';
 import { useDispatch, useSelector } from 'react-redux';
 import { ArrowUpRight, ShoppingBag, Clock, CheckCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { 
+  fetchStaffDashboard,
+  selectStaffDashboardData,
+  selectDashboardLoading,
+  selectStaffErrors
+} from '@/store/slices/staff/staffSlice'; // Update this path to your actual staff slice location
 
 export default function StaffPageDashboard() {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const workspaceId: any = useSelector(
     (state: RootState) => state.auth.workspaceId
   );
   const user = useSelector((state: RootState) => state.auth.user);
   const [localWorkspaceId, setLocalWorkspaceId] = useState(workspaceId || '');
+
+  // Redux state selectors
+  const data = useSelector(selectStaffDashboardData);
+  const isLoading = useSelector(selectDashboardLoading);
+  const errors = useSelector(selectStaffErrors);
+  const error = errors.dashboard || errors.general;
 
   // Use the user's workspaceId if available in the user object
   useEffect(() => {
@@ -28,10 +39,12 @@ export default function StaffPageDashboard() {
     }
   }, [workspaceId, user, dispatch]);
 
-  const { data, isLoading, error } = useStaffDashboard(localWorkspaceId, {
-    // Only fetch when workspaceId is available
-    enabled: Boolean(localWorkspaceId),
-  });
+  // Fetch dashboard data when workspaceId is available
+  useEffect(() => {
+    if (localWorkspaceId) {
+      dispatch(fetchStaffDashboard(localWorkspaceId));
+    }
+  }, [localWorkspaceId, dispatch]);
 
   // Show loading state when waiting for workspaceId or data
   if (!localWorkspaceId) {
@@ -56,7 +69,7 @@ export default function StaffPageDashboard() {
         <h3 className="text-lg font-semibold text-red-700 mb-2">
           Error Loading Dashboard
         </h3>
-        <p className="text-red-600">{error.message}</p>
+        <p className="text-red-600">{error}</p>
       </div>
     );
   }

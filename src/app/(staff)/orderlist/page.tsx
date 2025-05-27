@@ -156,53 +156,53 @@ export default function OrderListPage() {
   }, [dispatch]);
 
   // Handle update order status
-  const handleUpdateOrderStatus = useCallback(
-    async (orderId: string, newStatus: string) => {
-      if (!workspaceId) {
-        toast.error('Workspace ID is missing');
-        return;
-      }
+const handleUpdateOrderStatus = useCallback(
+  async (orderId: string, newStatus: string) => {
+    if (!workspaceId) {
+      toast.error('Workspace ID is missing');
+      return;
+    }
 
-      // Get current order to store original status for potential revert
-      const currentOrder = orders.find(order => order.id === orderId);
-      const originalStatus = currentOrder?.status;
+    // Get current order to store original status for potential revert
+    const currentOrder = orders.find(order => order.id === orderId);
+    const originalStatus = currentOrder?.status;
 
-      if (!originalStatus) {
-        toast.error('Unable to find order');
-        return;
-      }
+    if (!originalStatus) {
+      toast.error('Unable to find order');
+      return;
+    }
 
-      try {
-        // Optimistic update
-        dispatch(updateOrderStatusOptimistic({ orderId, newStatus }));
-        
-        // Dispatch the async action
-        const result = await dispatch(changeOrderStatus({
-          workspaceId,
-          orderId,
-          status: newStatus,
-        }));
+    try {
+      // Optimistic update
+      dispatch(updateOrderStatusOptimistic({ orderId, newStatus }));
+      
+      // Dispatch the async action
+      const result = await dispatch(changeOrderStatus({
+        workspaceId,
+        orderId,
+        status: newStatus,
+      }));
 
-        if (changeOrderStatus.fulfilled.match(result)) {
-          toast.success(result.payload.message);
-          setIsOrderDetailsOpen(false);
-        } else if (changeOrderStatus.rejected.match(result)) {
-          // Revert optimistic update on error
-          dispatch(revertOrderStatusUpdate({ orderId, originalStatus }));
-          throw new Error(result.payload as string);
-        }
-      } catch (error: any) {
+      if (changeOrderStatus.fulfilled.match(result)) {
+        toast.success(result.payload.message);
+        setIsOrderDetailsOpen(false);
+      } else if (changeOrderStatus.rejected.match(result)) {
         // Revert optimistic update on error
         dispatch(revertOrderStatusUpdate({ orderId, originalStatus }));
-        
-        const errorMessage = error.message?.includes('CORS')
-          ? 'CORS error: Unable to connect to the server. Please contact support.'
-          : error.message || 'Failed to update order status';
-        toast.error(errorMessage);
+        throw new Error(result.payload as string);
       }
-    },
-    [dispatch, workspaceId, orders]
-  );
+    } catch (error: any) {
+      // Revert optimistic update on error
+      dispatch(revertOrderStatusUpdate({ orderId, originalStatus }));
+      
+      const errorMessage = error.message?.includes('CORS')
+        ? 'CORS error: Unable to connect to the server. Please contact support.'
+        : error.message || 'Failed to update order status';
+      toast.error(errorMessage);
+    }
+  },
+  [dispatch, workspaceId, orders]
+);
 
   // Close order details dialog
   const handleCloseOrderDetails = useCallback(() => {
