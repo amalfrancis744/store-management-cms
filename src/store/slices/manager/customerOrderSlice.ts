@@ -229,6 +229,25 @@ const orderSlice = createSlice({
       state.status = 'idle';
       state.error = null;
     },
+
+
+
+    // add a new order to the orders array
+
+      addNewOrderBySocket: (state, action: PayloadAction<Order>) => {
+      const newOrder = action.payload;
+      
+      // Check if order already exists to prevent duplicates
+      const existingOrderIndex = state.orders.findIndex(order => order.id === newOrder.id);
+      
+      if (existingOrderIndex === -1) {
+        // Add new order to the beginning of the list (most recent first)
+        state.orders.unshift(newOrder);
+        console.log(`New order ${newOrder.id} added to order list via socket`);
+      } else {
+        console.log(`Order ${newOrder.id} already exists in the list, skipping duplicate`);
+      }
+    },
   // In your orderSlice.ts
 updateOrderStatesBySocket: (state, action: PayloadAction<any[]>) => { 
   const notifications = action.payload; 
@@ -426,7 +445,7 @@ updateOrderStatesBySocket: (state, action: PayloadAction<any[]>) => {
 });
 
 // Export actions
-export const { clearCurrentOrder, resetOrderStatus, updateOrderStatesBySocket } = orderSlice.actions;
+export const { clearCurrentOrder, resetOrderStatus, updateOrderStatesBySocket,addNewOrderBySocket } = orderSlice.actions;
 
 // Selectors
 export const selectAllOrders = (state: RootState) => state.customerOrder.orders;

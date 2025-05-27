@@ -12,16 +12,12 @@ import {
 import type { AppDispatch, RootState } from '@/store';
 import { AgGridReact } from 'ag-grid-react';
 import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community';
-
-// import 'ag-grid-community/styles/ag-grid.css';
-// import 'ag-grid-community/styles/ag-theme-alpine.css';
 import { format } from 'date-fns';
 
 // UI Components
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { themeQuartz, iconSetMaterial } from 'ag-grid-community';
-
 import {
   Dialog,
   DialogContent,
@@ -130,28 +126,23 @@ const paymentStatusColors: Record<string, string> = {
   FAILED: 'bg-red-100 text-red-800',
 };
 
-
-// Custom hook for order notifications - moved outside component
+// Custom hook for order notifications
 const useOrderNotifications = () => {
   const dispatch = useDispatch();
   const notifications = useSelector((state: RootState) => state.socket.notifications);
-  
+
   useEffect(() => {
-    // Filter for unprocessed order-related notifications
-    const orderNotifications = notifications.filter(notification => 
-      !notification.processed && (
-        notification.data?.type === 'ORDER_UPDATE' ||
-        notification.title?.includes('Order') ||
-        notification.message?.includes('order')
-      )
+    const orderNotifications = notifications.filter(
+      (notification) =>
+        !notification.processed &&
+        (notification.data?.type === 'ORDER_UPDATE' ||
+          notification.title?.includes('Order') ||
+          notification.message?.includes('order'))
     );
-    
+
     if (orderNotifications.length > 0) {
       console.log('Processing order notifications:', orderNotifications);
       dispatch(updateOrderStatesBySocket(orderNotifications));
-      
-      // Mark notifications as processed (you'll need to add this action to your socket slice)
-      // dispatch(markNotificationsAsProcessed(orderNotifications.map(n => n.id)));
     }
   }, [notifications, dispatch]);
 };
@@ -169,6 +160,8 @@ const OrdersPage = () => {
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
 
+  console.log('Orders deaties:', selectedOrder);
+
   // Filtering states
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string[]>([]);
@@ -178,30 +171,6 @@ const OrdersPage = () => {
   const { data: staffMembers = [] } = workspaceId
     ? useStaffMembers(workspaceId)
     : { data: [] };
-
-  // Fetch orders when workspaceId changes or after staff assignment
-  const fetchOrders = () => {
-    if (workspaceId) {
-      dispatch(fetchCustomerOrders(workspaceId));
-    }
-  };
-
-
-
-  
-
-  
-
-  useEffect(() => {
-
-    fetchOrders();
- 
-  }, [dispatch, workspaceId]);
-
-  // Format date for display
-  const formatDate = (dateString: string) => {
-    return format(new Date(dateString), 'MMM dd, yyyy h:mm a');
-  };
 
   // Filter orders based on search and filters
   const filteredOrders = useMemo(() => {
@@ -224,27 +193,56 @@ const OrdersPage = () => {
       let matchesDate = true;
       const orderDate = new Date(order.placedAt);
       const now = new Date();
+      const orderDateStart = new Date(
+        orderDate.getFullYear(),
+        orderDate.getMonth(),
+        orderDate.getDate()
+      );
+      const nowStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
       if (dateFilter === 'today') {
-        matchesDate =
-          orderDate.getDate() === now.getDate() &&
-          orderDate.getMonth() === now.getMonth() &&
-          orderDate.getFullYear() === now.getFullYear();
+        matchesDate = orderDateStart.getTime() === nowStart.getTime();
       } else if (dateFilter === 'week') {
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(now.getDate() - 7);
-        matchesDate = orderDate >= sevenDaysAgo;
+        const sevenDaysAgo = new Date(nowStart);
+        sevenDaysAgo.setDate(nowStart.getDate() - 7);
+        matchesDate = orderDateStart >= sevenDaysAgo;
       } else if (dateFilter === 'month') {
-        const thirtyDaysAgo = new Date();
-        thirtyDaysAgo.setDate(now.getDate() - 30);
-        matchesDate = orderDate >= thirtyDaysAgo;
+        const thirtyDaysAgo = new Date(nowStart);
+        thirtyDaysAgo.setDate(nowStart.getDate() - 30);
+        matchesDate = orderDateStart >= thirtyDaysAgo;
       }
 
-      return (
-        matchesSearch && matchesStatus && matchesPaymentMethod && matchesDate
-      );
+      return matchesSearch && matchesStatus && matchesPaymentMethod && matchesDate;
     });
   }, [orders, searchQuery, statusFilter, paymentMethodFilter, dateFilter]);
+
+  // Fetch orders when workspaceId changes
+  const fetchOrders = () => {
+    if (workspaceId) {
+      dispatch(fetchCustomerOrders(workspaceId));
+    }
+  };
+
+  useEffect(() => {
+    fetchOrders();
+  }, [dispatch, workspaceId]);
+
+  // Refresh grid when filteredOrders change
+  useEffect(() => {
+    if (gridRef.current && filteredOrders.length > 0) {
+      console.log('Refreshing AG Grid with filteredOrders:', filteredOrders);
+    }
+  }, [filteredOrders]);
+
+  // Log orders for debugging
+  useEffect(() => {
+    console.log('Orders state updated:', orders);
+  }, [orders]);
+
+  // Format date for display
+  const formatDate = (dateString: string) => {
+    return format(new Date(dateString), 'MMM dd, yyyy h:mm a');
+  };
 
   // Status badge renderer
   const StatusBadgeRenderer = (props: any) => {
@@ -288,7 +286,7 @@ const OrdersPage = () => {
     return (
       <div className="flex items-center">
         <div className="flex items-center justify-center mr-2">
-          {staffMember?.email}
+          {staffMember?.email || 'Unknown'}
         </div>
       </div>
     );
@@ -381,6 +379,8 @@ const OrdersPage = () => {
       {
         headerName: 'Customer',
         field: 'user.firstName',
+        valueGetter: (params: any) =>
+          params.data.user ? `${params.data.user.firstName} ${params.data.user.lastName}` : 'Unknown',
         width: 180,
         minWidth: 120,
         flex: 1.5,
@@ -555,9 +555,7 @@ const OrdersPage = () => {
                     <DropdownMenuCheckboxItem
                       key={method}
                       checked={paymentMethodFilter.includes(method)}
-                      onCheckedChange={() =>
-                        handlePaymentMethodFilterChange(method)
-                      }
+                      onCheckedChange={() => handlePaymentMethodFilterChange(method)}
                     >
                       {method}
                     </DropdownMenuCheckboxItem>
@@ -698,18 +696,18 @@ const OrdersPage = () => {
                     </CardHeader>
                     <CardContent>
                       <div className="text-sm">
-                        <p>{selectedOrder?.shippingAddress?.address}</p>
+                        <p>{selectedOrder?.shippingAddress?.address || 'N/A'}</p>
                         {selectedOrder?.shippingAddress?.street && (
                           <p>{selectedOrder?.shippingAddress?.street}</p>
                         )}
                         <p>
-                          {selectedOrder?.shippingAddress?.city}
+                          {selectedOrder?.shippingAddress?.city || 'N/A'}
                           {selectedOrder?.shippingAddress?.region &&
                             `, ${selectedOrder?.shippingAddress?.region}`}
                           {selectedOrder?.shippingAddress?.postalCode &&
                             ` ${selectedOrder.shippingAddress?.postalCode}`}
                         </p>
-                        <p>{selectedOrder?.shippingAddress?.country}</p>
+                        <p>{selectedOrder?.shippingAddress?.country || 'N/A'}</p>
                       </div>
                     </CardContent>
                   </Card>
@@ -724,22 +722,14 @@ const OrdersPage = () => {
                           <div className="bg-blue-100 text-blue-800 rounded-full h-8 w-8 flex items-center justify-center mr-2">
                             {staffMembers
                               .find((s) => s.id === selectedOrder.assignedTo)
-                              ?.firstName.charAt(0)}
+                              ?.firstName.charAt(0) || '?'}
                           </div>
                           <div>
                             <p className="font-medium">
-                              {
-                                staffMembers.find(
-                                  (s) => s.id === selectedOrder.assignedTo
-                                )?.firstName
-                              }
+                              {staffMembers.find((s) => s.id === selectedOrder.assignedTo)?.firstName || 'Unknown'}
                             </p>
                             <p className="text-sm text-gray-500">
-                              {
-                                staffMembers.find(
-                                  (s) => s.id === selectedOrder.assignedTo
-                                )?.email
-                              }
+                              {staffMembers.find((s) => s.id === selectedOrder.assignedTo)?.email || 'N/A'}
                             </p>
                           </div>
                         </div>

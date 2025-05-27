@@ -9,7 +9,7 @@ import {
   setLastError,
   Notification,
 } from '@/store/slices/socket/socketSlice';
-import { updateOrderStatesBySocket } from '@/store/slices/manager/customerOrderSlice'; // Import the action
+import { addNewOrderBySocket, updateOrderStatesBySocket } from '@/store/slices/manager/customerOrderSlice'; 
 import { getSocket } from '@/lib/socket';
 import { addNewAssignedOrder } from '@/store/slices/staff/staffSlice';
 
@@ -101,9 +101,9 @@ export const socketMiddleware: Middleware = (store) => {
           status: data.status,
           type: 'ORDER_UPDATE',
           createdAt: new Date().toISOString(),
-        }
+        },
       };
-      
+
       // Dispatch order state update
       store.dispatch(updateOrderStatesBySocket([orderUpdateNotification]));
     });
@@ -131,9 +131,9 @@ export const socketMiddleware: Middleware = (store) => {
           status: payload.status,
           type: 'ORDER_UPDATE',
           createdAt: new Date().toISOString(),
-        }
+        },
       };
-      
+
       // Dispatch order state update
       store.dispatch(updateOrderStatesBySocket([orderUpdateNotification]));
     });
@@ -161,9 +161,9 @@ export const socketMiddleware: Middleware = (store) => {
           status: data.status,
           type: 'ORDER_UPDATE',
           createdAt: new Date().toISOString(),
-        }
+        },
       };
-      
+
       // Dispatch order state update
       store.dispatch(updateOrderStatesBySocket([orderUpdateNotification]));
     });
@@ -191,9 +191,9 @@ export const socketMiddleware: Middleware = (store) => {
           status: payload.status || 'PENDING',
           type: 'ORDER_UPDATE',
           createdAt: new Date().toISOString(),
-        }
+        },
       };
-      
+
       // Dispatch order state update
       store.dispatch(updateOrderStatesBySocket([orderUpdateNotification]));
     });
@@ -217,44 +217,68 @@ export const socketMiddleware: Middleware = (store) => {
 
         // Check if this notification contains order update data
         if (notification.data && notification.data.type === 'ORDER_UPDATE') {
-          
           // Dispatch order state update
           store.dispatch(updateOrderStatesBySocket([notification]));
+        } else if (notification.title === 'Order Assigned') {
+          console.log('Processing Order Assigned notification');
+
+          // Extract the order from the notification
+          const orderData = notification.data?.fullOrder;
+
+          console.log('Order data:', orderData);
+          if (orderData) {
+            // Transform the order data to match your Order interface
+            const newOrder: Order = {
+              id: orderData.id,
+              status: orderData.status,
+              totalAmount: orderData.totalAmount,
+              placedAt: orderData.placedAt,
+              items: orderData.items.map((item: any) => ({
+                quantity: item.quantity,
+                price: item.price,
+                variant: {
+                  id: item.variantId,
+                  title: item.variant.title,
+                  sku: item.variant.sku,
+                  stock: item.variant.stock,
+                  color: item.variant.color,
+                  size: item.variant.size,
+                },
+              })),
+            };
+
+            // Dispatch the action to add the new order
+            store.dispatch(addNewAssignedOrder(newOrder));
+          }
         }
+      else if (notification.title === 'New Order Placed') {
+  console.log('Processing New Order Placed notification');
 
-       else if (notification.title === 'Order Assigned') {
-      console.log('Processing Order Assigned notification');
-      
-      // Extract the order from the notification
-      const orderData = notification.data?.fullOrder;
+  const orderData = notification.data?.orderResponsePayload;
 
-      console.log('Order data:', orderData);
-      if (orderData) {
-        // Transform the order data to match your Order interface
-        const newOrder: Order = {
-          id: orderData.id,
-          status: orderData.status,
-          totalAmount: orderData.totalAmount,
-          placedAt: orderData.placedAt,
-          items: orderData.items.map((item: any) => ({
-            quantity: item.quantity,
-            price: item.price,
-            variant: {
-              id: item.variantId,
-              title: item.variant.title,
-              sku: item.variant.sku,
-              stock: item.variant.stock,
-              color: item.variant.color,
-              size: item.variant.size
-            }
-          }))
-        };
-        
-        // Dispatch the action to add the new order
-        store.dispatch(addNewAssignedOrder(newOrder));
-      }
-    }
-        
+ if (orderData && orderData.order) {
+  const newOrder: Order = {
+    id: orderData.order.id, // Correct field
+    status: orderData.order.status,
+    totalAmount: orderData.order.totalAmount,
+    placedAt: orderData.order.createdAt,
+    items: orderData.order.items.map((item: any) => ({
+      quantity: item.quantity,
+      price: item.price,
+      variant: {
+        id: item.variantId || '',
+        title: item.variant?.title || '',
+        sku: item.variant?.sku || '',
+        stock: item.variant?.stock || 0,
+        color: item.variant?.color || '',
+        size: item.variant?.size || '',
+      },
+    })),
+  };
+
+  store.dispatch(addNewOrderBySocket(newOrder));
+}
+}
 
         // Use correct toast method based on type
         switch (notification.type) {
