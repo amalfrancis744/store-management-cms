@@ -4,11 +4,11 @@ import { RootState, AppDispatch } from '@/store';
 import { useDispatch, useSelector } from 'react-redux';
 import { ArrowUpRight, ShoppingBag, Clock, CheckCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { 
+import {
   fetchStaffDashboard,
   selectStaffDashboardData,
   selectDashboardLoading,
-  selectStaffErrors
+  selectStaffErrors,
 } from '@/store/slices/staff/staffSlice'; // Update this path to your actual staff slice location
 
 export default function StaffPageDashboard() {

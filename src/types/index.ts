@@ -215,6 +215,7 @@ interface OrdersSummary {
   recentOrdersCount?: number;
   recentOrders?: Orders[];
   pendingBills?: PendingBill[];
+  totalRevenue?: number;
 }
 
 export interface CurrentWorkspace {

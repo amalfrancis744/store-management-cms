@@ -230,138 +230,170 @@ const orderSlice = createSlice({
       state.error = null;
     },
 
-
-
     // add a new order to the orders array
 
-      addNewOrderBySocket: (state, action: PayloadAction<Order>) => {
+    addNewOrderBySocket: (state, action: PayloadAction<Order>) => {
       const newOrder = action.payload;
-      
+
       // Check if order already exists to prevent duplicates
-      const existingOrderIndex = state.orders.findIndex(order => order.id === newOrder.id);
-      
+      const existingOrderIndex = state.orders.findIndex(
+        (order) => order.id === newOrder.id
+      );
+
       if (existingOrderIndex === -1) {
         // Add new order to the beginning of the list (most recent first)
         state.orders.unshift(newOrder);
         console.log(`New order ${newOrder.id} added to order list via socket`);
       } else {
-        console.log(`Order ${newOrder.id} already exists in the list, skipping duplicate`);
+        console.log(
+          `Order ${newOrder.id} already exists in the list, skipping duplicate`
+        );
       }
     },
-  // In your orderSlice.ts
-updateOrderStatesBySocket: (state, action: PayloadAction<any[]>) => { 
-  const notifications = action.payload; 
-   
-  notifications.forEach(notification => { 
-    // Check if this is an ORDER_UPDATE notification 
-    if (notification.data?.type === 'ORDER_UPDATE') { 
-      console.log('Processing ORDER_UPDATE notification:', notification.data); 
-       
-      // Extract order data from notification 
-      const { id: orderId, status: newStatus } = notification.data; 
-      const updatedAt = notification.data.createdAt || new Date().toISOString(); 
-       
-      // Update the order in the orders array 
-      const orderIndex = state.orders.findIndex(order => order.id === orderId); 
-      if (orderIndex !== -1) { 
-        console.log(`Updating order ${orderId} status from ${state.orders[orderIndex].status} to ${newStatus}`); 
-        
-        // Prepare updated order object
-        const updatedOrder = {
-          ...state.orders[orderIndex], 
-          status: newStatus, 
-          updatedAt: updatedAt 
-        };
+    // In your orderSlice.ts
+    updateOrderStatesBySocket: (state, action: PayloadAction<any[]>) => {
+      const notifications = action.payload;
 
-        // If status is delivered, update paymentStatus to COMPLETED
-        if (newStatus?.toLowerCase() === 'delivered') {
-          updatedOrder.paymentStatus = 'COMPLETED';
-          console.log(`Order ${orderId} delivered - setting paymentStatus to COMPLETED`);
-        }
+      notifications.forEach((notification) => {
+        // Check if this is an ORDER_UPDATE notification
+        if (notification.data?.type === 'ORDER_UPDATE') {
+          console.log(
+            'Processing ORDER_UPDATE notification:',
+            notification.data
+          );
 
-        state.orders[orderIndex] = updatedOrder;
-      } else { 
-        console.log(`Order ${orderId} not found in current orders list`); 
-      } 
-       
-      // Update current order if it matches 
-      if (state.currentOrder && state.currentOrder.id === orderId) { 
-        console.log(`Updating current order ${orderId} status to ${newStatus}`); 
-        
-        const updatedCurrentOrder = {
-          ...state.currentOrder, 
-          status: newStatus, 
-          updatedAt: updatedAt 
-        };
+          // Extract order data from notification
+          const { id: orderId, status: newStatus } = notification.data;
+          const updatedAt =
+            notification.data.createdAt || new Date().toISOString();
 
-        // If status is delivered, update paymentStatus to COMPLETED
-        if (newStatus?.toLowerCase() === 'delivered') {
-          updatedCurrentOrder.paymentStatus = 'COMPLETED';
-          console.log(`Current order ${orderId} delivered - setting paymentStatus to COMPLETED`);
-        }
+          // Update the order in the orders array
+          const orderIndex = state.orders.findIndex(
+            (order) => order.id === orderId
+          );
+          if (orderIndex !== -1) {
+            console.log(
+              `Updating order ${orderId} status from ${state.orders[orderIndex].status} to ${newStatus}`
+            );
 
-        state.currentOrder = updatedCurrentOrder;
-      } 
-    } 
-     
-    // Handle other notification types for orders if needed 
-    else if (notification.title?.includes('Order') || notification.message?.includes('order')) { 
-      console.log('Processing order-related notification:', notification); 
-       
-      // Try to extract order ID from message or notification data 
-      let orderId = null; 
-      let newStatus = null; 
-       
-      // Extract from message patterns 
-      if (notification.message?.includes('Order ') && notification.message?.includes(' updated to ')) { 
-        const orderIdMatch = notification.message.match(/Order (\w+) updated to (\w+)/); 
-        if (orderIdMatch) { 
-          orderId = orderIdMatch[1]; 
-          newStatus = orderIdMatch[2]; 
-        } 
-      } 
-       
-      // If we extracted valid data, update the order 
-      if (orderId && newStatus) { 
-        const orderIndex = state.orders.findIndex(order => order.id === orderId); 
-        if (orderIndex !== -1) { 
-          console.log(`Updating order ${orderId} status from pattern match to ${newStatus}`); 
-          
-          const updatedOrder = {
-            ...state.orders[orderIndex], 
-            status: newStatus, 
-            updatedAt: notification.createdAt || new Date().toISOString() 
-          };
+            // Prepare updated order object
+            const updatedOrder = {
+              ...state.orders[orderIndex],
+              status: newStatus,
+              updatedAt: updatedAt,
+            };
 
-          // If status is delivered, update paymentStatus to COMPLETED
-          if (newStatus?.toLowerCase() === 'delivered') {
-            updatedOrder.paymentStatus = 'COMPLETED';
-            console.log(`Order ${orderId} delivered via pattern match - setting paymentStatus to COMPLETED`);
+            // If status is delivered, update paymentStatus to COMPLETED
+            if (newStatus?.toLowerCase() === 'delivered') {
+              updatedOrder.paymentStatus = 'COMPLETED';
+              console.log(
+                `Order ${orderId} delivered - setting paymentStatus to COMPLETED`
+              );
+            }
+
+            state.orders[orderIndex] = updatedOrder;
+          } else {
+            console.log(`Order ${orderId} not found in current orders list`);
           }
 
-          state.orders[orderIndex] = updatedOrder;
-        } 
-         
-        // Update current order if it matches 
-        if (state.currentOrder && state.currentOrder.id === orderId) { 
-          const updatedCurrentOrder = {
-            ...state.currentOrder, 
-            status: newStatus, 
-            updatedAt: notification.createdAt || new Date().toISOString() 
-          };
+          // Update current order if it matches
+          if (state.currentOrder && state.currentOrder.id === orderId) {
+            console.log(
+              `Updating current order ${orderId} status to ${newStatus}`
+            );
 
-          // If status is delivered, update paymentStatus to COMPLETED
-          if (newStatus?.toLowerCase() === 'delivered') {
-            updatedCurrentOrder.paymentStatus = 'COMPLETED';
-            console.log(`Current order ${orderId} delivered via pattern match - setting paymentStatus to COMPLETED`);
+            const updatedCurrentOrder = {
+              ...state.currentOrder,
+              status: newStatus,
+              updatedAt: updatedAt,
+            };
+
+            // If status is delivered, update paymentStatus to COMPLETED
+            if (newStatus?.toLowerCase() === 'delivered') {
+              updatedCurrentOrder.paymentStatus = 'COMPLETED';
+              console.log(
+                `Current order ${orderId} delivered - setting paymentStatus to COMPLETED`
+              );
+            }
+
+            state.currentOrder = updatedCurrentOrder;
+          }
+        }
+
+        // Handle other notification types for orders if needed
+        else if (
+          notification.title?.includes('Order') ||
+          notification.message?.includes('order')
+        ) {
+          console.log('Processing order-related notification:', notification);
+
+          // Try to extract order ID from message or notification data
+          let orderId = null;
+          let newStatus = null;
+
+          // Extract from message patterns
+          if (
+            notification.message?.includes('Order ') &&
+            notification.message?.includes(' updated to ')
+          ) {
+            const orderIdMatch = notification.message.match(
+              /Order (\w+) updated to (\w+)/
+            );
+            if (orderIdMatch) {
+              orderId = orderIdMatch[1];
+              newStatus = orderIdMatch[2];
+            }
           }
 
-          state.currentOrder = updatedCurrentOrder;
-        } 
-      } 
-    } 
-  }); 
-},
+          // If we extracted valid data, update the order
+          if (orderId && newStatus) {
+            const orderIndex = state.orders.findIndex(
+              (order) => order.id === orderId
+            );
+            if (orderIndex !== -1) {
+              console.log(
+                `Updating order ${orderId} status from pattern match to ${newStatus}`
+              );
+
+              const updatedOrder = {
+                ...state.orders[orderIndex],
+                status: newStatus,
+                updatedAt: notification.createdAt || new Date().toISOString(),
+              };
+
+              // If status is delivered, update paymentStatus to COMPLETED
+              if (newStatus?.toLowerCase() === 'delivered') {
+                updatedOrder.paymentStatus = 'COMPLETED';
+                console.log(
+                  `Order ${orderId} delivered via pattern match - setting paymentStatus to COMPLETED`
+                );
+              }
+
+              state.orders[orderIndex] = updatedOrder;
+            }
+
+            // Update current order if it matches
+            if (state.currentOrder && state.currentOrder.id === orderId) {
+              const updatedCurrentOrder = {
+                ...state.currentOrder,
+                status: newStatus,
+                updatedAt: notification.createdAt || new Date().toISOString(),
+              };
+
+              // If status is delivered, update paymentStatus to COMPLETED
+              if (newStatus?.toLowerCase() === 'delivered') {
+                updatedCurrentOrder.paymentStatus = 'COMPLETED';
+                console.log(
+                  `Current order ${orderId} delivered via pattern match - setting paymentStatus to COMPLETED`
+                );
+              }
+
+              state.currentOrder = updatedCurrentOrder;
+            }
+          }
+        }
+      });
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -445,7 +477,12 @@ updateOrderStatesBySocket: (state, action: PayloadAction<any[]>) => {
 });
 
 // Export actions
-export const { clearCurrentOrder, resetOrderStatus, updateOrderStatesBySocket,addNewOrderBySocket } = orderSlice.actions;
+export const {
+  clearCurrentOrder,
+  resetOrderStatus,
+  updateOrderStatesBySocket,
+  addNewOrderBySocket,
+} = orderSlice.actions;
 
 // Selectors
 export const selectAllOrders = (state: RootState) => state.customerOrder.orders;

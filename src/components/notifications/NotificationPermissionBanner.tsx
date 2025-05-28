@@ -14,11 +14,6 @@ export default function NotificationPermissionBanner() {
 
   useEffect(() => {
     const handleNotificationSetup = async () => {
-      console.log(
-        'Requesting notification permission...',
-        Notification.permission
-      );
-
       if (!('Notification' in window)) {
         console.warn('This browser does not support notifications.');
         return;

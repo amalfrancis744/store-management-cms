@@ -10,7 +10,7 @@ interface AuthState {
   activeRole: string | null;
   workspaceId: string | null;
   token: string | null;
-    // OTP verification states
+  // OTP verification states
   pendingVerification: {
     email: string | null;
     isRequired: boolean;
@@ -59,8 +59,8 @@ const initialState: AuthState = {
         getInitialActiveRole(safeParseJson(localStorage.getItem('user')))
       : null,
   token: null,
-    // OTP verification states
-   pendingVerification: {
+  // OTP verification states
+  pendingVerification: {
     email: null,
     isRequired: false,
   },
@@ -219,8 +219,6 @@ export const loginUser = createAsyncThunk(
 
 // Modified logout action to clear all persisted data
 
-
-
 export const registerUser = createAsyncThunk(
   'auth/register',
   async (
@@ -252,7 +250,6 @@ export const verifySignupOTP = createAsyncThunk(
     { email, otp }: { email: string; otp: string },
     { rejectWithValue }
   ) => {
-
     console.log('Verifying OTP for email:', email, 'with OTP:', otp);
     try {
       const response: any = await authAPI.verifySignupOTP(email, otp);
@@ -291,8 +288,6 @@ export const resendSignupOTP = createAsyncThunk(
     }
   }
 );
-
-
 
 export const logoutUser = createAsyncThunk(
   'auth/logout',
@@ -508,8 +503,8 @@ const authSlice = createSlice({
     //   state.error = action.payload as string;
     // });
 
-     // Register - Updated to handle OTP requirement
-     // Register - Updated to handle OTP requirement
+    // Register - Updated to handle OTP requirement
+    // Register - Updated to handle OTP requirement
     builder.addCase(registerUser.pending, (state) => {
       state.isLoading = true;
       state.error = null;
@@ -567,10 +562,6 @@ const authSlice = createSlice({
       state.isLoading = false;
       state.error = action.payload as string;
     });
-
-
-
-    
 
     // Logout
     builder.addCase(logoutUser.pending, (state) => {

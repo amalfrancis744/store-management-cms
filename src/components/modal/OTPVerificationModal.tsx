@@ -42,7 +42,7 @@ export function OTPVerificationModal({
     setIsLoading(true);
     try {
       const resultAction = await dispatch(verifySignupOTP({ email, otp }));
-      
+
       if (verifySignupOTP.fulfilled.match(resultAction)) {
         const userRoles = resultAction.payload.user?.roles || [];
         onVerifySuccess(userRoles);
@@ -64,7 +64,7 @@ export function OTPVerificationModal({
           <p className="text-sm text-gray-600">
             We've sent a 6-digit verification code to {email}
           </p>
-          
+
           <Input
             type="text"
             placeholder="Enter OTP"
@@ -72,7 +72,7 @@ export function OTPVerificationModal({
             onChange={(e) => setOtp(e.target.value)}
             maxLength={6}
           />
-          
+
           <div className="flex justify-between">
             <Button
               variant="outline"
@@ -81,11 +81,8 @@ export function OTPVerificationModal({
             >
               Resend OTP
             </Button>
-            
-            <Button
-              onClick={handleVerify}
-              disabled={isLoading || !otp}
-            >
+
+            <Button onClick={handleVerify} disabled={isLoading || !otp}>
               {isLoading ? 'Verifying...' : 'Verify'}
             </Button>
           </div>

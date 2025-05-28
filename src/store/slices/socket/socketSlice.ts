@@ -192,7 +192,8 @@ export interface Notification {
   updatedAt?: string;
   workspaceId: number;
   read?: boolean;
-  isRead?: boolean; // API uses isRead, but we'll normalize to read
+  isRead?: boolean;
+  data?: any; // API uses isRead, but we'll normalize to read
 }
 
 // Type for notification fetch params
@@ -278,9 +279,16 @@ export const fetchNotifications = createAsyncThunk(
 // Async thunk for marking notification as read
 export const markNotificationAsReadAPI = createAsyncThunk(
   'socket/markNotificationAsRead',
-  async (notificationId: string, { rejectWithValue }) => {
+  async (
+    params: { notificationId: string; workspaceId: string },
+    { rejectWithValue }
+  ) => {
+    console.log('Marking notification as read:', params);
+    const { notificationId, workspaceId } = params;
     try {
-      await axiosInstance.patch(`/notifications/${notificationId}/read`);
+      await axiosInstance.put(
+        `/notifications/${workspaceId}/${notificationId}/read`
+      );
       return notificationId;
     } catch (error: any) {
       console.error('Failed to mark notification as read:', error);

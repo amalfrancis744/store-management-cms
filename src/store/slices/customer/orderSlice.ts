@@ -183,6 +183,48 @@ const orderSlice = createSlice({
     clearCurrentOrder: (state) => {
       state.currentOrder = null;
     },
+
+    updateCustomerOrderStatus: (state, action: PayloadAction<any[]>) => {
+      const orderData: any = action.payload;
+      console.log('Updating single order:', orderData);
+
+      const orderId = orderData.id;
+      const newStatus = orderData.status;
+      const updatedAt = orderData.updatedAt || new Date().toISOString();
+
+      // Update the order in all workspace/user order arrays
+      Object.keys(state.orders).forEach((key) => {
+        const ordersArray = state.orders[key];
+        const orderIndex = ordersArray.findIndex(
+          (order) => order.id === orderId
+        );
+
+        if (orderIndex !== -1) {
+          console.log(
+            `Updating order ${orderId} status from ${ordersArray[orderIndex].status} to ${newStatus}`
+          );
+
+          // Update the entire order object with new data
+          state.orders[key][orderIndex] = {
+            ...ordersArray[orderIndex],
+            ...orderData, // Merge all updated order data
+            updatedAt: updatedAt,
+          };
+
+          // Re-sort the array to maintain order
+          state.orders[key] = sortOrdersByCreatedAt(state.orders[key]);
+        }
+      });
+
+      // Also update currentOrder if it matches
+      if (state.currentOrder && state.currentOrder.id === orderId) {
+        state.currentOrder = {
+          ...state.currentOrder,
+          ...orderData, // Merge all updated order data
+          updatedAt: updatedAt,
+        };
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -286,6 +328,7 @@ export const {
   clearStripeUrl,
   setCurrentOrder,
   clearCurrentOrder,
+  updateCustomerOrderStatus,
 } = orderSlice.actions;
 
 // Export selectors

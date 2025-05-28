@@ -28,11 +28,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
-import { registerUser, clearErrors, resendSignupOTP } from '@/store/slices/authSlice';
+import {
+  registerUser,
+  clearErrors,
+  resendSignupOTP,
+} from '@/store/slices/authSlice';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { OTPVerificationModal } from '../modal/OTPVerificationModal';
-
 
 const Role = {
   ADMIN: 'ADMIN',
@@ -61,7 +64,9 @@ export function RegisterForm() {
   const [registeredEmail, setRegisteredEmail] = useState('');
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { isLoading, error, pendingVerification } = useAppSelector((state) => state.auth);
+  const { isLoading, error, pendingVerification } = useAppSelector(
+    (state) => state.auth
+  );
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -98,9 +103,11 @@ export function RegisterForm() {
       };
 
       const resultAction = await dispatch(registerUser(payload));
-      
+
       if (registerUser.fulfilled.match(resultAction)) {
-        toast.success('Registration successful! Please verify your email with OTP.');
+        toast.success(
+          'Registration successful! Please verify your email with OTP.'
+        );
         setRegisteredEmail(values.email);
         setShowOTPModal(true);
       }
@@ -157,7 +164,7 @@ export function RegisterForm() {
           </div>
         </CardHeader>
         <CardContent>
-         <Form {...form}>
+          <Form {...form}>
             <form
               onSubmit={form.handleSubmit(onSubmit)}
               onChange={handleFormChange}

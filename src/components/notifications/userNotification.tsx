@@ -60,10 +60,11 @@ export default function Notifications({
 
   const handleNotificationClick = async (
     notificationId: string,
-    isRead: boolean
+    isRead: boolean,
+    workspaceId?: string
   ) => {
     if (!isRead) {
-      await markAsRead(notificationId);
+      await markAsRead(notificationId, workspaceId);
     }
   };
 
@@ -242,12 +243,12 @@ export default function Notifications({
                       ? 'bg-blue-50 border-l-2 border-l-blue-500'
                       : ''
                   }`}
-                  onClick={() =>
-                    handleNotificationClick(
-                      notification.id,
-                      notification.read || false
-                    )
-                  }
+                  // onClick={() =>
+                  //   handleNotificationClick(
+                  //     notification.id,
+                  //     notification.read || false
+                  //   )
+                  // }
                 >
                   <div className="flex w-full justify-between items-start">
                     <span
@@ -272,15 +273,17 @@ export default function Notifications({
                   </p>
                   <div className="mt-2 flex w-full items-center justify-between text-xs text-gray-400">
                     <span>
-                      {new Date(notification.createdAt).toLocaleString(
-                        undefined,
-                        {
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        }
-                      )}
+                      {notification.createdAt
+                        ? new Date(notification.createdAt).toLocaleString(
+                            undefined,
+                            {
+                              month: 'short',
+                              day: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            }
+                          )
+                        : ''}
                     </span>
                     <Button
                       variant="ghost"

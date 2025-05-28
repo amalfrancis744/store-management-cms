@@ -73,9 +73,7 @@ export const updateWorkspace = createAsyncThunk(
       }
 
       const response = await workspaceAPI.updateWorkspace(id, workspaceData);
-      console.log('Update responseddddd amalaaaaaaa:', response.data);
 
-      // Return both the updated workspace and the full response
       return {
         ...response.data, // or response.data if the structure is different
         id, // Ensure ID is included
@@ -113,6 +111,33 @@ const workspaceSlice = createSlice({
     },
     clearWorkspaceErrors: (state) => {
       state.error = null;
+    },
+
+    updateWorkspaceDetails: (state, action) => {
+      if (state.currentWorkspace) {
+        if (action.payload.orderId) {
+          state.currentWorkspace.ordersSummary.recentOrdersCount += 1;
+          state.currentWorkspace.ordersSummary.recentOrders.unshift({
+            id: action.payload.orderId,
+            totalAmount: action.payload.totalAmount,
+            status: action.payload.status,
+            placedAt: action.payload.createdAt,
+            user: {
+              firstName: action.payload.user.name.split(' ')[0],
+              lastName: action.payload.user.name.split(' ')[1] || '',
+            },
+          });
+        }
+
+        if (
+          action.payload.status === 'DELIVERED' ||
+          action.payload.paymentStatus === 'COMPLETED'
+        ) {
+          state.currentWorkspace.ordersSummary.totalRevenue =
+            (state.currentWorkspace.ordersSummary.totalRevenue || 0) +
+            action.payload.totalAmount;
+        }
+      }
     },
   },
   extraReducers: (builder) => {
@@ -211,6 +236,9 @@ const workspaceSlice = createSlice({
   },
 });
 
-export const { setActiveWorkspace, clearWorkspaceErrors } =
-  workspaceSlice.actions;
+export const {
+  setActiveWorkspace,
+  clearWorkspaceErrors,
+  updateWorkspaceDetails,
+} = workspaceSlice.actions;
 export default workspaceSlice.reducer;

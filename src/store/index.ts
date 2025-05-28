@@ -23,6 +23,7 @@ import customerOrderReducer from './slices/manager/customerOrderSlice';
 import socketReducer from './slices/socket/socketSlice';
 import notificationReducer from './slices/notification/notificationSlice';
 import staffReducer from './slices/staff/staffSlice';
+import adminDashboardReducer from './slices/admin/adminDashboardSlice';
 
 import { ThunkAction } from 'redux-thunk';
 import socketMiddleware from '@/middleware/socketMiddleware';
@@ -123,6 +124,14 @@ const staffPersistConfig = {
   // Only persist selected order and last fetched workspace ID
   whitelist: ['selectedOrder', 'lastFetchedWorkspaceId'],
 };
+
+// Persist config for admin dashboard
+const adminDashboardPersistConfig = {
+  key: 'adminDashboard',
+  storage,
+  whitelist: ['data', 'lastFetchTime'], // Persist only the data field
+};
+
 // Wrap reducers with persistReducer
 const persistedAuthReducer = persistReducer(authPersistConfig, authReducer);
 const persistedWorkspaceReducer = persistReducer(
@@ -165,13 +174,12 @@ const persistedNotificationReducer = persistReducer(
   notificationReducer
 );
 
-const persistedStaffReducer = persistReducer(
-  staffPersistConfig,
-  staffReducer
+const persistedStaffReducer = persistReducer(staffPersistConfig, staffReducer);
+
+const persistedAdminDashboardReducer = persistReducer(
+  adminDashboardPersistConfig,
+  adminDashboardReducer
 );
-
-
-
 
 // Combine all reducers
 const appReducer = combineReducers({
@@ -188,6 +196,7 @@ const appReducer = combineReducers({
   socket: persistedSocketReducer,
   notification: persistedNotificationReducer,
   staff: persistedStaffReducer,
+  adminDashboard: persistedAdminDashboardReducer,
 });
 
 // Root reducer with reset functionality
@@ -206,8 +215,10 @@ const rootReducer = (state: any, action: any) => {
     storage.removeItem('persist:userProfile');
     storage.removeItem('persist:customerOrder');
     storage.removeItem('persist:socket');
-    storage.removeItem('persist:staff'); 
-    // storage.removeItem('persist:notification'); // Add this line
+    storage.removeItem('persist:staff');
+
+    storage.removeItem('persist:notification'); //
+    storage.removeItem('persist:adminDashboard'); //
 
     // Return undefined to let the reducers return their initial state
     state = undefined;

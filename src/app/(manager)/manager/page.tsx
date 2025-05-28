@@ -27,9 +27,6 @@ export default function Manager() {
     (state: RootState) => state.workspace
   );
 
-
-
-
   useEffect(() => {
     setIsMounted(true);
     if (workspaceId && !currentWorkspace && !isLoading) {

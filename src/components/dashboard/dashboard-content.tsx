@@ -12,7 +12,7 @@ import {
   Activity,
 } from 'lucide-react';
 import { VisitorChart } from '@/components/dashboard/visitor-chart';
-import { useAdminDashboard } from '@/api/admin/dashboard-api';
+import { useAdminDashboard } from '@/hooks/admin/useAdminDashboard';
 import {
   JSXElementConstructor,
   Key,
@@ -24,29 +24,35 @@ import {
 } from 'react';
 
 export function DashboardContent() {
-  
-  const { data, isLoading, error, refetch } = useAdminDashboard();
+  const { data, isLoading, error, refetch, isDataStale } = useAdminDashboard();
   const [activeTab, setActiveTab] = useState<'month' | 'week'>('month');
 
-  // Refetch data on component mount
+  // Auto-refetch if data is stale and component is focused
   useEffect(() => {
-    refetch();
-  }, [refetch]);
+    const handleFocus = () => {
+      if (isDataStale) {
+        refetch();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [isDataStale, refetch]);
 
   // Calculate derived data with proper fallbacks
   const totalUsers =
-    data?.data?.usersByRole?.reduce(
+    data?.usersByRole?.reduce(
       (sum: any, role: { _count: { role: any } }) =>
         sum + (role?._count?.role || 0),
       0
     ) || 0;
 
-  const totalOrders = data?.data?.recentOrders?.count || 0;
-  const totalRevenue = data?.data?.revenue?.total || 0;
-  const activeWorkspaces = data?.data?.workspaceStatus?.active || 0;
-  const inactiveWorkspaces = data?.data?.workspaceStatus?.inactive || 0;
-  const workspaceCount = data?.data?.revenue?.byWorkspace?.length || 0;
-  const recentOrderCount = data?.data?.recentOrders?.orders?.length || 0;
+  const totalOrders = data?.recentOrders?.count || 0;
+  const totalRevenue = data?.revenue?.total || 0;
+  const activeWorkspaces = data?.workspaceStatus?.active || 0;
+  const inactiveWorkspaces = data?.workspaceStatus?.inactive || 0;
+  const workspaceCount = data?.revenue?.byWorkspace?.length || 0;
+  const recentOrderCount = data?.recentOrders?.orders?.length || 0;
 
   // Loading state
   if (isLoading) {
@@ -64,7 +70,7 @@ export function DashboardContent() {
         <h3 className="text-lg font-semibold text-red-700 mb-2">
           Error Loading Dashboard
         </h3>
-        <p className="text-red-600">{error.message}</p>
+        <p className="text-red-600">{error}</p>
         <button
           onClick={() => refetch()}
           className="mt-3 px-4 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200"
@@ -95,7 +101,17 @@ export function DashboardContent() {
 
   return (
     <>
-      <h1 className="mb-6 text-2xl font-bold">Dashboard</h1>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">Dashboard</h1>
+        {isDataStale && (
+          <button
+            onClick={() => refetch()}
+            className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded hover:bg-blue-200"
+          >
+            Refresh Data
+          </button>
+        )}
+      </div>
 
       {/* Stats Cards */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -111,7 +127,7 @@ export function DashboardContent() {
               <div>
                 <div className="text-3xl font-bold">{totalUsers}</div>
                 <div className="mt-1 text-sm text-gray-500">
-                  {data?.data?.usersByRole?.map(
+                  {data?.usersByRole?.map(
                     (role: {
                       role:
                         | boolean
@@ -243,10 +259,10 @@ export function DashboardContent() {
             </div>
           </CardHeader>
           <CardContent>
-            {data?.data?.userSignupsOverTime?.length > 0 ? (
+            {data?.userSignupsOverTime?.length > 0 ? (
               <div className="h-64">
                 <VisitorChart
-                  data={data.data.userSignupsOverTime}
+                  data={data.userSignupsOverTime}
                   timeframe={activeTab}
                 />
               </div>
@@ -271,8 +287,8 @@ export function DashboardContent() {
                 <div className="text-sm text-gray-500 mb-2">
                   Most Popular Items
                 </div>
-                {data?.data?.topSellingProducts?.length > 0 ? (
-                  data.data.topSellingProducts.map(
+                {data?.topSellingProducts?.length > 0 ? (
+                  data.topSellingProducts.map(
                     (
                       product: {
                         variantId: any;
@@ -309,8 +325,8 @@ export function DashboardContent() {
                 <div className="text-sm font-medium mb-2">
                   Most Active Workspaces
                 </div>
-                {data?.data?.mostActiveWorkspaces?.length > 0 ? (
-                  data.data.mostActiveWorkspaces.map(
+                {data?.mostActiveWorkspaces?.length > 0 ? (
+                  data.mostActiveWorkspaces.map(
                     (
                       workspace: {
                         workspaceId: any;

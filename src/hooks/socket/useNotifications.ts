@@ -12,7 +12,6 @@ import {
   Notification,
   addNotification,
   FetchNotificationsParams,
-  
 } from '@/store/slices/socket/socketSlice';
 import { emitSocketEvent } from '@/lib/socket';
 
@@ -142,10 +141,17 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
    * Mark a specific notification as read (local + API)
    */
   const markAsRead = useCallback(
-    async (id: string) => {
+    async (id: string, workspaceId: string) => {
       try {
+        console.log(
+          'Marking notification as read  markASread:',
+          id,
+          workspaceId
+        );
         // Update API first
-        await dispatch(markNotificationAsReadAPI(id)).unwrap();
+        await dispatch(
+          markNotificationAsReadAPI({ notificationId: id, workspaceId })
+        ).unwrap();
         // Local state is updated by the fulfilled case
       } catch (error) {
         // Fallback to local update if API fails
@@ -248,9 +254,6 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
     },
     [notifications]
   );
-
-  
-
 
   return {
     // State

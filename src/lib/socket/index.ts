@@ -7,8 +7,6 @@ let socket: Socket | null = null;
 export const initSocket = (userId: string): Socket => {
   // Only create a new socket if one doesn't exist or if it exists but isn't connected
   if (!socket) {
-    console.log(`Creating new socket instance for user: ${userId}`);
-
     socket = io(SOCKET_URL, {
       query: { userId },
       transports: ['websocket', 'polling'],

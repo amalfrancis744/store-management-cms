@@ -9,9 +9,15 @@ import {
   setLastError,
   Notification,
 } from '@/store/slices/socket/socketSlice';
-import { addNewOrderBySocket, updateOrderStatesBySocket } from '@/store/slices/manager/customerOrderSlice'; 
+import {
+  addNewOrderBySocket,
+  updateOrderStatesBySocket,
+} from '@/store/slices/manager/customerOrderSlice';
 import { getSocket } from '@/lib/socket';
 import { addNewAssignedOrder } from '@/store/slices/staff/staffSlice';
+import { updateWorkspaceDetails } from '@/store/slices/admin/workspaceSlice';
+import { updateAdminDashboardMetrics } from '@/store/slices/admin/adminDashboardSlice';
+import { updateCustomerOrderStatus } from '@/store/slices/customer/orderSlice';
 
 const MAX_CONNECTION_ATTEMPTS = 3;
 
@@ -40,11 +46,6 @@ export const socketMiddleware: Middleware = (store) => {
     socket.on('disconnect', (reason: string) => {
       console.log('Socket disconnected via middleware:', reason);
       store.dispatch(setConnected(false));
-
-      //   // Only show toast for unexpected disconnects
-      //   if (reason !== 'io client disconnect') {
-      //     toast.warning(`Disconnected from notification server: ${reason}`);
-      //   }
     });
 
     socket.on('connect_error', (error: Error) => {
@@ -217,6 +218,7 @@ export const socketMiddleware: Middleware = (store) => {
 
         // Check if this notification contains order update data
         if (notification.data && notification.data.type === 'ORDER_UPDATE') {
+          console.log('Processing Order Update notification');
           // Dispatch order state update
           store.dispatch(updateOrderStatesBySocket([notification]));
         } else if (notification.title === 'Order Assigned') {
@@ -249,36 +251,88 @@ export const socketMiddleware: Middleware = (store) => {
 
             // Dispatch the action to add the new order
             store.dispatch(addNewAssignedOrder(newOrder));
+            store.dispatch(updateCustomerOrderStatus(orderData));
+          }
+        } else if (notification.title === 'New Order Placed') {
+          console.log('Processing New Order Placed notification');
+
+          const orderData = notification.data?.orderResponsePayload;
+
+          console.log('Order data:', orderData);
+
+          if (orderData && orderData.order) {
+            const newOrder: Order = {
+              id: orderData.order.id,
+              status: orderData.order.status,
+              totalAmount: orderData.order.totalAmount,
+              placedAt: orderData.order.placedAt, // Use placedAt instead of createdAt
+              items: orderData.order.items.map((item: any) => ({
+                quantity: item.quantity,
+                price: item.price,
+                variant: {
+                  id: item.variant?.id || '', // Use item.variant.id instead of item.variantId
+                  title: item.variant?.title || '',
+                  sku: item.variant?.sku || '',
+                  stock: item.variant?.stock || 0,
+                  color: item.variant?.color || '',
+                  size: item.variant?.size || '',
+                  // Add product name if needed in your Order type
+                  productName: item.variant?.product?.name || '',
+                },
+              })),
+              // Add additional fields that might be useful
+              userId: orderData.order.userId,
+              paymentMethod: orderData.order.paymentMethod,
+              paymentStatus: orderData.order.paymentStatus,
+              notes: orderData.order.notes,
+              shippingAddress: {
+                address: orderData.order.shippingAddress?.address || '',
+                street: orderData.order.shippingAddress?.street || '',
+                city: orderData.order.shippingAddress?.city || '',
+                region: orderData.order.shippingAddress?.region || '',
+                postalCode: orderData.order.shippingAddress?.postalCode || '',
+                country: orderData.order.shippingAddress?.country || '',
+              },
+              user: {
+                firstName: orderData.order.user?.firstName || '',
+                lastName: orderData.order.user?.lastName || '',
+                email: orderData.order.user?.email || '',
+                phone: orderData.order.user?.phone || '',
+              },
+            };
+
+            store.dispatch(addNewOrderBySocket(newOrder));
+
+            store.dispatch(
+              updateWorkspaceDetails({
+                orderId: orderData.order.id,
+                totalAmount: orderData.order.totalAmount,
+                status: orderData.order.status,
+                createdAt: orderData.order.placedAt,
+                user: {
+                  name: orderData.order.user?.firstName || '',
+                  email: orderData.order.user?.email || '',
+                },
+              })
+            );
+
+            store.dispatch(
+              updateAdminDashboardMetrics({
+                type: 'NEW_ORDER',
+                payload: {
+                  orderId: orderData.order.id,
+                  totalAmount: orderData.order.totalAmount,
+                  status: orderData.order.status,
+                  createdAt: orderData.order.placedAt,
+                  user: {
+                    firstName: orderData.order.user?.firstName || '',
+                    lastName: orderData.order.user?.lastName || '',
+                  },
+                },
+              })
+            );
           }
         }
-      else if (notification.title === 'New Order Placed') {
-  console.log('Processing New Order Placed notification');
-
-  const orderData = notification.data?.orderResponsePayload;
-
- if (orderData && orderData.order) {
-  const newOrder: Order = {
-    id: orderData.order.id, // Correct field
-    status: orderData.order.status,
-    totalAmount: orderData.order.totalAmount,
-    placedAt: orderData.order.createdAt,
-    items: orderData.order.items.map((item: any) => ({
-      quantity: item.quantity,
-      price: item.price,
-      variant: {
-        id: item.variantId || '',
-        title: item.variant?.title || '',
-        sku: item.variant?.sku || '',
-        stock: item.variant?.stock || 0,
-        color: item.variant?.color || '',
-        size: item.variant?.size || '',
-      },
-    })),
-  };
-
-  store.dispatch(addNewOrderBySocket(newOrder));
-}
-}
 
         // Use correct toast method based on type
         switch (notification.type) {

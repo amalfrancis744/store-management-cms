@@ -10,7 +10,7 @@ interface AuthResponse {
     refreshToken: string;
   };
   message: string;
-  result?: any; 
+  result?: any;
 }
 
 interface EncryptedResponse {
@@ -22,15 +22,10 @@ export const authAPI = {
   // Login user
   login: async (email: string, password: string) => {
     try {
-      console.log('Login API called with:', {
-        email,
-        password,
-      });
       const encryptedPayload = encryptPayload({
         email,
         password,
       });
-      console.log('Encrypted Payload:', encryptedPayload);
       const response = await axiosInstance.post(
         '/auth/signin',
         encryptedPayload
@@ -43,8 +38,6 @@ export const authAPI = {
         const message = decryptedData.message;
 
         const { token, refreshToken, user } = decryptedData.data;
-
-
 
         const workspaceId = user.workspaceId;
 
@@ -112,9 +105,7 @@ export const authAPI = {
 
   // w
 
-
-
-register: async (userData: {
+  register: async (userData: {
     firstName: string;
     lastName: string;
     email: string;
@@ -140,26 +131,29 @@ register: async (userData: {
 
       // Registration now just returns success message, no user data/tokens
       if (response.data.iv && response.data.encryptedData) {
-        const decryptedData = decryptResponse<{ message: string; email: string }>(
-          response.data as EncryptedResponse
-        );
+        const decryptedData = decryptResponse<{
+          message: string;
+          email: string;
+        }>(response.data as EncryptedResponse);
         console.log('Decrypted Data from register API:', decryptedData);
 
-        return { 
-          data: { 
+        return {
+          data: {
             message: decryptedData.message,
             email: decryptedData.email || userData.email,
-            requiresOTP: true
-          } 
+            requiresOTP: true,
+          },
         };
       } else {
         // Handle unencrypted response (fallback)
-        return { 
-          data: { 
-            message: response.data.message || 'Registration successful. Please verify your email with OTP.',
+        return {
+          data: {
+            message:
+              response.data.message ||
+              'Registration successful. Please verify your email with OTP.',
             email: userData.email,
-            requiresOTP: true
-          } 
+            requiresOTP: true,
+          },
         };
       }
     } catch (error) {
@@ -175,13 +169,10 @@ register: async (userData: {
       //   otp,
       // });
 
-      const response = await axiosInstance.post(
-        '/auth/signup-verify-otp',
-      {
+      const response = await axiosInstance.post('/auth/signup-verify-otp', {
         email,
-        otp
-      }
-      );
+        otp,
+      });
 
       if (response.data.iv && response.data.encryptedData) {
         const decryptedData = decryptResponse<AuthResponse>(
@@ -189,9 +180,8 @@ register: async (userData: {
         );
         console.log('Decrypted OTP verification data:', decryptedData);
 
-
-
-        const { token, refreshToken, user } = decryptedData.result || decryptedData.data;
+        const { token, refreshToken, user } =
+          decryptedData.result || decryptedData.data;
         const message = decryptedData.message;
 
         // Determine active role
@@ -239,7 +229,7 @@ register: async (userData: {
   resendSignupOTP: async (email: string) => {
     try {
       const encryptedPayload = encryptPayload({ email });
-      
+
       const response = await axiosInstance.post(
         '/auth/resend-signup-otp', // Assuming this endpoint exists
         encryptedPayload
@@ -257,9 +247,6 @@ register: async (userData: {
       throw error;
     }
   },
-
-
-
 
   // Logout user
   logout: async () => {

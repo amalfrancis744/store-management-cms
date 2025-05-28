@@ -83,10 +83,6 @@ export const useSocket = () => {
     }
   }, [isConnected, user?.id, connectionAttempts, connect]);
 
-
-
-  
-
   return {
     isConnected,
     connectionAttempts,

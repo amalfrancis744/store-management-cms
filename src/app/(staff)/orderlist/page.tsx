@@ -101,7 +101,7 @@ const getSelectableStatuses = (currentStatus: string): string[] => {
 export default function OrderListPage() {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
-  
+
   // Redux selectors
   const workspaceId = useSelector((state: RootState) => state.auth.workspaceId);
   const dashboardData = useSelector(selectStaffDashboardData);
@@ -150,59 +150,64 @@ export default function OrderListPage() {
   }, [router]);
 
   // Handle view order details
-  const handleViewOrderDetails = useCallback((order: Order) => {
-    dispatch(setSelectedOrder(order));
-    setIsOrderDetailsOpen(true);
-  }, [dispatch]);
+  const handleViewOrderDetails = useCallback(
+    (order: Order) => {
+      dispatch(setSelectedOrder(order));
+      setIsOrderDetailsOpen(true);
+    },
+    [dispatch]
+  );
 
   // Handle update order status
-const handleUpdateOrderStatus = useCallback(
-  async (orderId: string, newStatus: string) => {
-    if (!workspaceId) {
-      toast.error('Workspace ID is missing');
-      return;
-    }
+  const handleUpdateOrderStatus = useCallback(
+    async (orderId: string, newStatus: string) => {
+      if (!workspaceId) {
+        toast.error('Workspace ID is missing');
+        return;
+      }
 
-    // Get current order to store original status for potential revert
-    const currentOrder = orders.find(order => order.id === orderId);
-    const originalStatus = currentOrder?.status;
+      // Get current order to store original status for potential revert
+      const currentOrder = orders.find((order) => order.id === orderId);
+      const originalStatus = currentOrder?.status;
 
-    if (!originalStatus) {
-      toast.error('Unable to find order');
-      return;
-    }
+      if (!originalStatus) {
+        toast.error('Unable to find order');
+        return;
+      }
 
-    try {
-      // Optimistic update
-      dispatch(updateOrderStatusOptimistic({ orderId, newStatus }));
-      
-      // Dispatch the async action
-      const result = await dispatch(changeOrderStatus({
-        workspaceId,
-        orderId,
-        status: newStatus,
-      }));
+      try {
+        // Optimistic update
+        dispatch(updateOrderStatusOptimistic({ orderId, newStatus }));
 
-      if (changeOrderStatus.fulfilled.match(result)) {
-        toast.success(result.payload.message);
-        setIsOrderDetailsOpen(false);
-      } else if (changeOrderStatus.rejected.match(result)) {
+        // Dispatch the async action
+        const result = await dispatch(
+          changeOrderStatus({
+            workspaceId,
+            orderId,
+            status: newStatus,
+          })
+        );
+
+        if (changeOrderStatus.fulfilled.match(result)) {
+          toast.success(result.payload.message);
+          setIsOrderDetailsOpen(false);
+        } else if (changeOrderStatus.rejected.match(result)) {
+          // Revert optimistic update on error
+          dispatch(revertOrderStatusUpdate({ orderId, originalStatus }));
+          throw new Error(result.payload as string);
+        }
+      } catch (error: any) {
         // Revert optimistic update on error
         dispatch(revertOrderStatusUpdate({ orderId, originalStatus }));
-        throw new Error(result.payload as string);
+
+        const errorMessage = error.message?.includes('CORS')
+          ? 'CORS error: Unable to connect to the server. Please contact support.'
+          : error.message || 'Failed to update order status';
+        toast.error(errorMessage);
       }
-    } catch (error: any) {
-      // Revert optimistic update on error
-      dispatch(revertOrderStatusUpdate({ orderId, originalStatus }));
-      
-      const errorMessage = error.message?.includes('CORS')
-        ? 'CORS error: Unable to connect to the server. Please contact support.'
-        : error.message || 'Failed to update order status';
-      toast.error(errorMessage);
-    }
-  },
-  [dispatch, workspaceId, orders]
-);
+    },
+    [dispatch, workspaceId, orders]
+  );
 
   // Close order details dialog
   const handleCloseOrderDetails = useCallback(() => {
@@ -373,13 +378,15 @@ const handleUpdateOrderStatus = useCallback(
           <h1 className="text-2xl font-bold">Order Management</h1>
         </div>
         <div className="flex items-center gap-4">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             size="sm"
             onClick={handleRefreshData}
             disabled={isDashboardLoading}
           >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isDashboardLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`h-4 w-4 mr-2 ${isDashboardLoading ? 'animate-spin' : ''}`}
+            />
             Refresh
           </Button>
           {workspaceDetails?.name && (
@@ -431,7 +438,9 @@ const handleUpdateOrderStatus = useCallback(
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">{stats?.successfulDeliveries || 0}</p>
+            <p className="text-2xl font-bold">
+              {stats?.successfulDeliveries || 0}
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -453,9 +462,9 @@ const handleUpdateOrderStatus = useCallback(
       ) : errors.dashboard ? (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
           <p>Error loading orders: {errors.dashboard}</p>
-          <Button 
-            variant="outline" 
-            size="sm" 
+          <Button
+            variant="outline"
+            size="sm"
             onClick={handleRefreshData}
             className="mt-2"
           >
@@ -603,8 +612,9 @@ const handleUpdateOrderStatus = useCallback(
                           selectedOrder.status
                         );
                         const isCurrentStatus = selectedOrder.status === status;
-                        const isSelectable = selectableStatuses.includes(status);
-                        
+                        const isSelectable =
+                          selectableStatuses.includes(status);
+
                         return (
                           <Button
                             key={status}
@@ -614,9 +624,7 @@ const handleUpdateOrderStatus = useCallback(
                               handleUpdateOrderStatus(selectedOrder.id, status)
                             }
                             className={
-                              isCurrentStatus
-                                ? ''
-                                : 'hover:bg-gray-100'
+                              isCurrentStatus ? '' : 'hover:bg-gray-100'
                             }
                             disabled={
                               isUpdatingOrderStatus ||

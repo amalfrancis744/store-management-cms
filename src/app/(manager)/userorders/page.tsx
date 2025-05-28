@@ -129,7 +129,9 @@ const paymentStatusColors: Record<string, string> = {
 // Custom hook for order notifications
 const useOrderNotifications = () => {
   const dispatch = useDispatch();
-  const notifications = useSelector((state: RootState) => state.socket.notifications);
+  const notifications = useSelector(
+    (state: RootState) => state.socket.notifications
+  );
 
   useEffect(() => {
     const orderNotifications = notifications.filter(
@@ -198,7 +200,11 @@ const OrdersPage = () => {
         orderDate.getMonth(),
         orderDate.getDate()
       );
-      const nowStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const nowStart = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
+      );
 
       if (dateFilter === 'today') {
         matchesDate = orderDateStart.getTime() === nowStart.getTime();
@@ -212,7 +218,9 @@ const OrdersPage = () => {
         matchesDate = orderDateStart >= thirtyDaysAgo;
       }
 
-      return matchesSearch && matchesStatus && matchesPaymentMethod && matchesDate;
+      return (
+        matchesSearch && matchesStatus && matchesPaymentMethod && matchesDate
+      );
     });
   }, [orders, searchQuery, statusFilter, paymentMethodFilter, dateFilter]);
 
@@ -380,7 +388,9 @@ const OrdersPage = () => {
         headerName: 'Customer',
         field: 'user.firstName',
         valueGetter: (params: any) =>
-          params.data.user ? `${params.data.user.firstName} ${params.data.user.lastName}` : 'Unknown',
+          params.data.user
+            ? `${params.data.user.firstName} ${params.data.user.lastName}`
+            : 'Unknown',
         width: 180,
         minWidth: 120,
         flex: 1.5,
@@ -555,7 +565,9 @@ const OrdersPage = () => {
                     <DropdownMenuCheckboxItem
                       key={method}
                       checked={paymentMethodFilter.includes(method)}
-                      onCheckedChange={() => handlePaymentMethodFilterChange(method)}
+                      onCheckedChange={() =>
+                        handlePaymentMethodFilterChange(method)
+                      }
                     >
                       {method}
                     </DropdownMenuCheckboxItem>
@@ -696,7 +708,9 @@ const OrdersPage = () => {
                     </CardHeader>
                     <CardContent>
                       <div className="text-sm">
-                        <p>{selectedOrder?.shippingAddress?.address || 'N/A'}</p>
+                        <p>
+                          {selectedOrder?.shippingAddress?.address || 'N/A'}
+                        </p>
                         {selectedOrder?.shippingAddress?.street && (
                           <p>{selectedOrder?.shippingAddress?.street}</p>
                         )}
@@ -707,7 +721,9 @@ const OrdersPage = () => {
                           {selectedOrder?.shippingAddress?.postalCode &&
                             ` ${selectedOrder.shippingAddress?.postalCode}`}
                         </p>
-                        <p>{selectedOrder?.shippingAddress?.country || 'N/A'}</p>
+                        <p>
+                          {selectedOrder?.shippingAddress?.country || 'N/A'}
+                        </p>
                       </div>
                     </CardContent>
                   </Card>
@@ -726,10 +742,14 @@ const OrdersPage = () => {
                           </div>
                           <div>
                             <p className="font-medium">
-                              {staffMembers.find((s) => s.id === selectedOrder.assignedTo)?.firstName || 'Unknown'}
+                              {staffMembers.find(
+                                (s) => s.id === selectedOrder.assignedTo
+                              )?.firstName || 'Unknown'}
                             </p>
                             <p className="text-sm text-gray-500">
-                              {staffMembers.find((s) => s.id === selectedOrder.assignedTo)?.email || 'N/A'}
+                              {staffMembers.find(
+                                (s) => s.id === selectedOrder.assignedTo
+                              )?.email || 'N/A'}
                             </p>
                           </div>
                         </div>
@@ -759,9 +779,9 @@ const OrdersPage = () => {
                   </CardHeader>
                   <CardContent>
                     <div className="space-y-4">
-                      {selectedOrder.items.map((item) => (
+                      {selectedOrder.items.map((item, index) => (
                         <div
-                          key={item.id}
+                          key={`${item.id}-${index}`}
                           className="flex items-center gap-4 p-3 border rounded-md hover:bg-gray-50 transition-colors"
                         >
                           <div className="w-12 h-12 bg-gray-100 rounded-md flex items-center justify-center">
