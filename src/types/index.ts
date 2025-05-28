@@ -223,3 +223,10 @@ export interface CurrentWorkspace {
   inventorySummary?: InventorySummary;
   ordersSummary?: OrdersSummary;
 }
+
+export interface Member{
+  id: string;
+  name: string;
+  email: string;
+  role: 'ADMIN' | 'MANAGER' | 'STAFF' | 'CUSTOMER';
+}

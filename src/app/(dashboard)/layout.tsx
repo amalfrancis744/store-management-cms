@@ -8,7 +8,9 @@ import {
   Layout,
   PackageSearch,
   Settings,
+  PackagePlus,
   Users,
+  UserPlus,
   Store,
   Network,
   ListOrdered,
@@ -75,11 +77,9 @@ export default function AdminLayout({
     { name: 'dashboard', icon: Layout, path: '/dashboard' },
     { name: 'workspace', icon: Network, path: '/workspace' },
     { name: 'category', icon: PackageSearch, path: '/category' },
-    { name: 'product', icon: PackageSearch, path: '/product' },
-    // { name: "order", icon: ListOrdered, path: "/order" },
-    // { name: "bill", icon: ReceiptIndianRupee, path: "/bill" },
-    // { name: "store", icon: Store, path: "/store" },
-    { name: 'user', icon: Users, path: '/user' },
+    { name: 'product', icon: PackagePlus, path: '/product' },
+    { name: 'member', icon: Users, path: '/member' },
+    { name: 'invite', icon: UserPlus, path: '/invite' },
   ];
 
   return (

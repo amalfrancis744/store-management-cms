@@ -24,6 +24,7 @@ import socketReducer from './slices/socket/socketSlice';
 import notificationReducer from './slices/notification/notificationSlice';
 import staffReducer from './slices/staff/staffSlice';
 import adminDashboardReducer from './slices/admin/adminDashboardSlice';
+import memberReducer from './slices/admin/memberSlice';
 
 import { ThunkAction } from 'redux-thunk';
 import socketMiddleware from '@/middleware/socketMiddleware';
@@ -132,6 +133,13 @@ const adminDashboardPersistConfig = {
   whitelist: ['data', 'lastFetchTime'], // Persist only the data field
 };
 
+// Persist config for member
+
+const memberPersistConfig = {
+  key: 'member',
+  storage,
+  whitelist: ['members', 'activeMember'], // Persist only members and activeMember
+};
 // Wrap reducers with persistReducer
 const persistedAuthReducer = persistReducer(authPersistConfig, authReducer);
 const persistedWorkspaceReducer = persistReducer(
@@ -181,6 +189,11 @@ const persistedAdminDashboardReducer = persistReducer(
   adminDashboardReducer
 );
 
+const persistedMemberReducer = persistReducer(
+  memberPersistConfig,
+  memberReducer
+);
+
 // Combine all reducers
 const appReducer = combineReducers({
   auth: persistedAuthReducer,
@@ -197,6 +210,7 @@ const appReducer = combineReducers({
   notification: persistedNotificationReducer,
   staff: persistedStaffReducer,
   adminDashboard: persistedAdminDashboardReducer,
+  members: persistedMemberReducer,
 });
 
 // Root reducer with reset functionality
@@ -219,6 +233,7 @@ const rootReducer = (state: any, action: any) => {
 
     storage.removeItem('persist:notification'); //
     storage.removeItem('persist:adminDashboard'); //
+    storage.removeItem('persist:member'); //
 
     // Return undefined to let the reducers return their initial state
     state = undefined;
