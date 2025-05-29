@@ -17,7 +17,11 @@ import { getSocket } from '@/lib/socket';
 import { addNewAssignedOrder } from '@/store/slices/staff/staffSlice';
 import { updateWorkspaceDetails } from '@/store/slices/admin/workspaceSlice';
 import { updateAdminDashboardMetrics } from '@/store/slices/admin/adminDashboardSlice';
-import { updateCustomerOrderStatus } from '@/store/slices/customer/orderSlice';
+import {
+  updateCustomerOrderStatus,
+  UpdateCustomerOrderStatusByStaff,
+} from '@/store/slices/customer/orderSlice';
+import { Order } from '@/types/order';
 
 const MAX_CONNECTION_ATTEMPTS = 3;
 
@@ -218,9 +222,10 @@ export const socketMiddleware: Middleware = (store) => {
 
         // Check if this notification contains order update data
         if (notification.data && notification.data.type === 'ORDER_UPDATE') {
-          console.log('Processing Order Update notification');
+          console.log('Processing Order Update notification:');
           // Dispatch order state update
           store.dispatch(updateOrderStatesBySocket([notification]));
+          store.dispatch(UpdateCustomerOrderStatusByStaff(notification.data));
         } else if (notification.title === 'Order Assigned') {
           console.log('Processing Order Assigned notification');
 
@@ -230,24 +235,43 @@ export const socketMiddleware: Middleware = (store) => {
           console.log('Order data:', orderData);
           if (orderData) {
             // Transform the order data to match your Order interface
-            const newOrder: Order = {
-              id: orderData.id,
-              status: orderData.status,
-              totalAmount: orderData.totalAmount,
-              placedAt: orderData.placedAt,
-              items: orderData.items.map((item: any) => ({
-                quantity: item.quantity,
-                price: item.price,
-                variant: {
-                  id: item.variantId,
-                  title: item.variant.title,
-                  sku: item.variant.sku,
-                  stock: item.variant.stock,
-                  color: item.variant.color,
-                  size: item.variant.size,
-                },
-              })),
-            };
+        const newOrder: Order = {
+  id: orderData.order.id,
+  status: orderData.order.status,
+  totalAmount: orderData.order.totalAmount,
+  placedAt: orderData.order.placedAt,
+  paidAt: orderData.order.paidAt || null, // Add this line
+  items: orderData.order.items.map((item: any) => ({
+    quantity: item.quantity,
+    price: item.price,
+    variant: {
+      id: item.variant?.id || '',
+      title: item.variant?.title || '',
+      sku: item.variant?.sku || '',
+      stock: item.variant?.stock || 0,
+      color: item.variant?.color || '',
+      size: item.variant?.size || '',
+    },
+  })),
+  userId: orderData.order.userId,
+  paymentMethod: orderData.order.paymentMethod,
+  paymentStatus: orderData.order.paymentStatus,
+  notes: orderData.order.notes,
+  shippingAddress: {
+    address: orderData.order.shippingAddress?.address || '',
+    street: orderData.order.shippingAddress?.street || '',
+    city: orderData.order.shippingAddress?.city || '',
+    region: orderData.order.shippingAddress?.region || '',
+    postalCode: orderData.order.shippingAddress?.postalCode || '',
+    country: orderData.order.shippingAddress?.country || '',
+  },
+  user: {
+    firstName: orderData.order.user?.firstName || '',
+    lastName: orderData.order.user?.lastName || '',
+    email: orderData.order.user?.email || '',
+    phone: orderData.order.user?.phone || '',
+  },
+};
 
             // Dispatch the action to add the new order
             store.dispatch(addNewAssignedOrder(newOrder));
@@ -261,7 +285,7 @@ export const socketMiddleware: Middleware = (store) => {
           console.log('Order data:', orderData);
 
           if (orderData && orderData.order) {
-            const newOrder: Order = {
+            const newOrder:any = {
               id: orderData.order.id,
               status: orderData.order.status,
               totalAmount: orderData.order.totalAmount,

@@ -50,7 +50,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 // Icons
-import { Eye, User, Search, Filter, Calendar } from 'lucide-react';
+import { Eye, User, Search, Filter, Calendar, } from 'lucide-react';
 import { useStaffMembers } from '@/api/manager/getAllStaff-api';
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -92,24 +92,51 @@ interface StaffMember {
   firstName: string;
   email: string;
 }
+interface User {
+  id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string | null;
+  status: string;
+  termsAccepted: boolean;
+  phoneVerified: boolean;
+  emailVerified: boolean;
+  isActive?: boolean;
+  profileImageUrl: string | null;
+  lastLogin: string;
+  createdAt: string;
+  updatedAt: string;
+  locationId: string | null;
+  isDeleted: boolean;
+}
 
 interface Order {
   id: string;
-  placedAt: string;
-  status: string;
-  paymentMethod: string;
-  paymentStatus: string;
+  userId: string;
+  shippingAddressId?: string;
+  billingAddressId?: string;
+  workspaceId?: number;
+  paymentMethod?: string;
+  paymentStatus?: string;
   totalAmount: number;
-  user: {
-    firstName: string;
-    lastName: string;
-    email: string;
-  };
-  shippingAddress: Address;
+  status: string;
+  notes?: string | null;
+  placedAt: string;
+  createdAt?: string;
+  updatedAt?: string;
+  stripeSessionId?: string | null;
+  paidAt?: string | null;
+  paymentDetails?: any | null;
   items: OrderItem[];
-  assignedTo?: string;
-}
+  user: User;
+  shippingAddress: Address;
+  billingAddress: Address;
+  assignedStaff?: StaffMember | string;
+  assignedTo?:string;
+  
 
+}
 // Status and payment color mappings
 const statusColors: Record<string, string> = {
   PENDING: 'bg-yellow-100 text-yellow-800 hover:bg-yellow-200',
@@ -127,27 +154,27 @@ const paymentStatusColors: Record<string, string> = {
 };
 
 // Custom hook for order notifications
-const useOrderNotifications = () => {
-  const dispatch = useDispatch();
-  const notifications = useSelector(
-    (state: RootState) => state.socket.notifications
-  );
+// const useOrderNotifications = () => {
+//   const dispatch = useDispatch();
+//   const notifications = useSelector(
+//     (state: RootState) => state.socket.notifications
+//   );
 
-  useEffect(() => {
-    const orderNotifications = notifications.filter(
-      (notification) =>
-        !notification.processed &&
-        (notification.data?.type === 'ORDER_UPDATE' ||
-          notification.title?.includes('Order') ||
-          notification.message?.includes('order'))
-    );
+//   useEffect(() => {
+//     const orderNotifications = notifications.filter(
+//       (notification) =>
+//         !notification.processed &&
+//         (notification.data?.type === 'ORDER_UPDATE' ||
+//           notification.title?.includes('Order') ||
+//           notification.message?.includes('order'))
+//     );
 
-    if (orderNotifications.length > 0) {
-      console.log('Processing order notifications:', orderNotifications);
-      dispatch(updateOrderStatesBySocket(orderNotifications));
-    }
-  }, [notifications, dispatch]);
-};
+//     if (orderNotifications.length > 0) {
+//       console.log('Processing order notifications:', orderNotifications);
+//       dispatch(updateOrderStatesBySocket(orderNotifications));
+//     }
+//   }, [notifications, dispatch]);
+// };
 
 const OrdersPage = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -162,7 +189,6 @@ const OrdersPage = () => {
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
 
-  console.log('Orders deaties:', selectedOrder);
 
   // Filtering states
   const [searchQuery, setSearchQuery] = useState('');
@@ -369,7 +395,7 @@ const OrdersPage = () => {
       {
         headerName: 'Order ID',
         field: 'id',
-        sort: 'desc',
+        sort: 'desc' as 'asc' | 'desc' | null | undefined,
         cellRenderer: OrderIdRenderer,
         width: 220,
         minWidth: 150,
@@ -402,7 +428,7 @@ const OrdersPage = () => {
         width: 120,
         minWidth: 100,
         flex: 1,
-        sort: 'desc',
+        sort: 'desc' as 'asc' | 'desc' | null | undefined,
       },
       {
         headerName: 'Status',

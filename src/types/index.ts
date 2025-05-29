@@ -228,5 +228,25 @@ export interface Member{
   id: string;
   name: string;
   email: string;
-  role: 'ADMIN' | 'MANAGER' | 'STAFF' | 'CUSTOMER';
+  role: 'ADMIN' | 'MANAGER' | 'STAFF' | 'CUSTOMER'| string;
+}
+
+
+export interface OrderNew {
+  id: string;
+  status: string;
+  totalAmount: number;
+  placedAt: string; // or Date, depending on how you're handling date values
+  items: Array<{
+    quantity: number;
+    price: number;
+    variant: {
+      id: string;
+      title: string;
+      sku: string;
+      stock: number;
+      color: string;
+      size: string;
+    };
+  }>;
 }

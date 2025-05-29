@@ -56,6 +56,7 @@ export const fetchStores = createAsyncThunk(
   ) => {
     try {
       const response = await storesAPI.getStores(params);
+      console.log('Fetched stores:', response);
       return response.data.stores;
     } catch (error: any) {
       return rejectWithValue(

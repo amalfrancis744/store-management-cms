@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axiosInstance from '@/api/axios-config';
+import { Order } from '@/types/order';
 
 // Types
 export interface OrderItem {
@@ -14,14 +15,6 @@ export interface OrderItem {
     color: string;
     size: string;
   };
-}
-
-export interface Order {
-  id: string;
-  status: string;
-  totalAmount: number;
-  placedAt: string;
-  items: OrderItem[];
 }
 
 export interface WorkspaceDetails {

@@ -79,10 +79,11 @@ const myTheme = themeQuartz.withPart(iconSetMaterial).withParams({
 
 // Type definitions
 interface Member {
+  role: string;
   id: string;
   name: string;
   email: string;
-  role: string;
+  
 }
 
 // Role color mappings
@@ -115,13 +116,12 @@ const MembersPage = () => {
   // Edit form states
   const [editName, setEditName] = useState('');
   const [editEmail, setEditEmail] = useState('');
-  const [editRole, setEditRole] = useState('');
+  const [editRole, setEditRole] = useState( '');
 
   // Filtering states
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<string[]>([]);
 
-  console.log('Members data:', members);
 
   // Filter members based on search and filters
   const filteredMembers = useMemo(() => {

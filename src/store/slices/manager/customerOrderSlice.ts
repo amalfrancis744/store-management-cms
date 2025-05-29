@@ -54,30 +54,32 @@ interface User {
   updatedAt: string;
   locationId: string | null;
   isDeleted: boolean;
+  
 }
 
 interface Order {
   id: string;
   userId: string;
-  shippingAddressId: string;
-  billingAddressId: string;
-  workspaceId: number;
-  paymentMethod: string;
-  paymentStatus: string;
+  shippingAddressId?: string;
+  billingAddressId?: string;
+  workspaceId?: number;
+  paymentMethod?: string;
+  paymentStatus?: string;
   totalAmount: number;
   status: string;
-  notes: string | null;
+  notes?: string | null;
   placedAt: string;
-  createdAt: string;
-  updatedAt: string;
-  stripeSessionId: string | null;
-  paidAt: string | null;
-  paymentDetails: any | null;
+  createdAt?: string;
+  updatedAt?: string;
+  stripeSessionId?: string | null;
+  paidAt?: string | null;
+  paymentDetails?: any | null;
   items: OrderItem[];
   user: User;
   shippingAddress: Address;
   billingAddress: Address;
   assignedStaff?: StaffMember | string;
+
 }
 
 interface OrderState {
