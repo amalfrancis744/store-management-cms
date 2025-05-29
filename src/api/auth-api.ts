@@ -81,29 +81,27 @@ export const authAPI = {
   },
 
   // Refresh token
-  refreshToken: async (refreshToken: string) => {
-    try {
-      const payload = encryptPayload({ refreshToken });
-      const response = await axiosInstance.post('/auth/refresh-token', payload);
+refreshToken: async (refreshToken: string) => {
+  try {
+    const response = await axiosInstance.post('/auth/refresh-token', { refreshToken });
 
-      if (response.data.iv && response.data.encryptedData) {
-        const decryptedData = decryptResponse<AuthResponse>(
-          response.data as EncryptedResponse
-        );
-        const { token, refreshToken } = decryptedData.data;
-
-        // Update tokens in localStorage
-        localStorage.setItem('token', token);
-        localStorage.setItem('refreshToken', refreshToken);
-
-        return { data: { token, refreshToken } };
-      }
-    } catch (error) {
-      throw error;
+    // Handle the standardized response format
+    if (response.data?.success && response.data?.data) {
+      return {
+        data: {
+          token: response.data.data.token,
+          refreshToken: response.data.data.refreshToken
+        }
+      };
     }
-  },
+    throw new Error(response.data?.message || 'Invalid refresh token response');
+  } catch (error) {
+    console.error('Refresh token failed:', error);
+    throw error;
+  }
+},
 
-  // w
+
 
   register: async (userData: {
     firstName: string;

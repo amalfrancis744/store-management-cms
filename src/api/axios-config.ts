@@ -2,8 +2,7 @@ import axios from 'axios';
 import { decryptResponse, encryptPayload } from '@/utils/encryptionHelper';
 
 const baseURL =
-  process.env.NEXT_PUBLIC_API_BASE_URL ||
-  'https://back-end-861q.onrender.com/api/v1';
+  process.env.NEXT_PUBLIC_API_BASE_URL
 
 const axiosInstance = axios.create({
   baseURL,
@@ -50,9 +49,7 @@ axiosInstance.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Handle token refresh
     if (isRefreshing) {
-      // Queue this request to retry after token refresh
       return new Promise((resolve, reject) => {
         failedQueue.push({ resolve, reject });
       })
@@ -66,58 +63,44 @@ axiosInstance.interceptors.response.use(
     originalRequest._retry = true;
     isRefreshing = true;
 
-    // Try to refresh the token
     try {
       const refreshToken = localStorage.getItem('refreshToken');
       if (!refreshToken) {
         throw new Error('No refresh token available');
       }
 
-      // Call the refresh token endpoint
       const response = await axios.post(`${baseURL}/auth/refresh-token`, {
         refreshToken,
       });
 
-      let newToken, newRefreshToken;
-
-      if (response.data.iv && response.data.encryptedData) {
-        const decryptedData: any = decryptResponse(response.data);
-        newToken = decryptedData.data.token;
-        newRefreshToken = decryptedData.data.refreshToken;
-      } else {
-        // Handle unencrypted response (fallback)
-        newToken = response.data.data?.token;
-        newRefreshToken = response.data.data?.refreshToken;
+      // Handle the standardized response format
+      if (!response.data?.success || !response.data?.data?.token) {
+        throw new Error(response.data?.message || 'Invalid token refresh response');
       }
 
-      if (!newToken) {
-        throw new Error('No new token received');
-      }
+      const newToken = response.data.data.token;
+      const newRefreshToken = response.data.data.refreshToken;
 
       // Update tokens in localStorage
       localStorage.setItem('token', newToken);
-      if (newRefreshToken) {
-        localStorage.setItem('refreshToken', newRefreshToken);
-      }
+      localStorage.setItem('refreshToken', newRefreshToken);
 
-      // Update Authorization header and retry original request
+      // Update Authorization header
       originalRequest.headers.Authorization = `Bearer ${newToken}`;
 
-      // Process any queued requests
+      // Process queued requests
       processQueue(null, newToken);
 
       return axiosInstance(originalRequest);
     } catch (refreshError) {
-      // If refresh fails, clear auth and reject all queued requests
+      // Clear auth and reject queued requests
       localStorage.removeItem('token');
       localStorage.removeItem('refreshToken');
       localStorage.removeItem('user');
       localStorage.removeItem('activeRole');
 
-      // Reject all queued requests
       processQueue(refreshError, null);
 
-      // Redirect to login page
       if (typeof window !== 'undefined') {
         window.location.href = '/login';
       }

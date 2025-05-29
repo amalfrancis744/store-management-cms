@@ -1,6 +1,8 @@
 import CryptoJS from 'crypto-js';
 
-const ENCRYPTION_KEY = '12345678901234567890123456789012'; // 32 characters for AES-256-CBC
+const ENCRYPTION_KEY = process.env.NEXT_PUBLIC_ENCRYPTION_KEY_NEW
+
+ 
 const IV_LENGTH = 16; // AES block size (16 bytes)
 
 export const encryptPayload = (data: object) => {
@@ -32,6 +34,7 @@ interface EncryptedData {
 
 export const decryptResponse = <T>(encryptedResponse: EncryptedData): T => {
   const { iv, encryptedData } = encryptedResponse;
+  
 
   // Create the key from the ENCRYPTION_KEY
   const key = CryptoJS.enc.Utf8.parse(ENCRYPTION_KEY);
