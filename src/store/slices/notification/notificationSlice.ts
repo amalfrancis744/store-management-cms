@@ -4,7 +4,7 @@ import { messaging, getToken } from '@/service/firebaseMessaging';
 import { authAPI } from '@/api/auth-api';
 
 interface NotificationState {
-  permission: NotificationPermission | null;
+  permission: NotificationPermission | null | string;
   fcmToken: string | null;
   error: string | null;
   isLoading: boolean;
@@ -22,8 +22,7 @@ const initialState: NotificationState = {
 };
 
 // VAPID key from Firebase Console
-const VAPID_KEY =
-  'BLhxG221hi7OLGxREEwnCWAwIvVlsBBL1WwQe77TY5HtHK2k5QFl6LIzGXr-EifCafZKd_g9IKON2gVb-kFVbFs'; // Replace with your actual key
+const VAPID_KEY = process.env.NEXT_PUBLIC_FIREBASE_APP_VAPID_KEY
 
 // Save FCM token to backend
 

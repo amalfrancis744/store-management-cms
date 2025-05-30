@@ -8,13 +8,13 @@ import {
 } from 'firebase/messaging';
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyB51Mvu5wA4I7SvANV5q45Eu18n4-o5odY',
-  authDomain: 'bakery-b426a.firebaseapp.com',
-  projectId: 'bakery-b426a',
-  storageBucket: 'bakery-b426a.firebasestorage.app',
-  messagingSenderId: '548551748923',
-  appId: '1:548551748923:web:ead31619ed09678c5d5b1e',
-  measurementId: 'G-8SSYMZT17F',
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID
 };
 
 // Initialize Firebase

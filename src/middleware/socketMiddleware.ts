@@ -236,12 +236,12 @@ export const socketMiddleware: Middleware = (store) => {
           if (orderData) {
             // Transform the order data to match your Order interface
         const newOrder: Order = {
-  id: orderData.order.id,
-  status: orderData.order.status,
-  totalAmount: orderData.order.totalAmount,
-  placedAt: orderData.order.placedAt,
-  paidAt: orderData.order.paidAt || null, // Add this line
-  items: orderData.order.items.map((item: any) => ({
+  id: orderData?.id,
+  status: orderData?.status,
+  totalAmount: orderData?.totalAmount,
+  placedAt: orderData?.placedAt,
+  paidAt: orderData?.paidAt || null, // Add this line
+  items: orderData?.items.map((item: any) => ({
     quantity: item.quantity,
     price: item.price,
     variant: {
@@ -253,23 +253,23 @@ export const socketMiddleware: Middleware = (store) => {
       size: item.variant?.size || '',
     },
   })),
-  userId: orderData.order.userId,
-  paymentMethod: orderData.order.paymentMethod,
-  paymentStatus: orderData.order.paymentStatus,
-  notes: orderData.order.notes,
+  userId: orderData?.userId,
+  paymentMethod: orderData?.paymentMethod,
+  paymentStatus: orderData?.paymentStatus,
+  notes: orderData?.notes,
   shippingAddress: {
-    address: orderData.order.shippingAddress?.address || '',
-    street: orderData.order.shippingAddress?.street || '',
-    city: orderData.order.shippingAddress?.city || '',
-    region: orderData.order.shippingAddress?.region || '',
-    postalCode: orderData.order.shippingAddress?.postalCode || '',
-    country: orderData.order.shippingAddress?.country || '',
+    address: orderData?.shippingAddress?.address || '',
+    street: orderData?.shippingAddress?.street || '',
+    city: orderData?.shippingAddress?.city || '',
+    region: orderData?.shippingAddress?.region || '',
+    postalCode: orderData?.shippingAddress?.postalCode || '',
+    country: orderData?.shippingAddress?.country || '',
   },
   user: {
-    firstName: orderData.order.user?.firstName || '',
-    lastName: orderData.order.user?.lastName || '',
-    email: orderData.order.user?.email || '',
-    phone: orderData.order.user?.phone || '',
+    firstName: orderData.user?.firstName || '',
+    lastName: orderData?.user?.lastName || '',
+    email: orderData?.user?.email || '',
+    phone: orderData?.user?.phone || '',
   },
 };
 
@@ -286,7 +286,7 @@ export const socketMiddleware: Middleware = (store) => {
 
           if (orderData && orderData.order) {
             const newOrder:any = {
-              id: orderData.order.id,
+              id: orderData?.order?.id,
               status: orderData.order.status,
               totalAmount: orderData.order.totalAmount,
               placedAt: orderData.order.placedAt, // Use placedAt instead of createdAt
@@ -305,7 +305,7 @@ export const socketMiddleware: Middleware = (store) => {
                 },
               })),
               // Add additional fields that might be useful
-              userId: orderData.order.userId,
+              userId: orderData?.order?.userId,
               paymentMethod: orderData.order.paymentMethod,
               paymentStatus: orderData.order.paymentStatus,
               notes: orderData.order.notes,
@@ -329,7 +329,7 @@ export const socketMiddleware: Middleware = (store) => {
 
             store.dispatch(
               updateWorkspaceDetails({
-                orderId: orderData.order.id,
+                orderId: orderData?.order?.id,
                 totalAmount: orderData.order.totalAmount,
                 status: orderData.order.status,
                 createdAt: orderData.order.placedAt,
@@ -344,7 +344,7 @@ export const socketMiddleware: Middleware = (store) => {
               updateAdminDashboardMetrics({
                 type: 'NEW_ORDER',
                 payload: {
-                  orderId: orderData.order.id,
+                  orderId: orderData?.order?.id,
                   totalAmount: orderData.order.totalAmount,
                   status: orderData.order.status,
                   createdAt: orderData.order.placedAt,
