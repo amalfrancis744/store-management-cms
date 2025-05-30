@@ -63,8 +63,7 @@ export const socketMiddleware: Middleware = (store) => {
 
       // Only show toast for the first few attempts to avoid spamming
       if (connectionAttempts < MAX_CONNECTION_ATTEMPTS) {
-        toast.error(`Connection error: ${error.message}. Retrying...`);
-
+ 
         // Attempt to reconnect after a delay if not at max attempts
         if (
           connectionAttempts + 1 < MAX_CONNECTION_ATTEMPTS &&
