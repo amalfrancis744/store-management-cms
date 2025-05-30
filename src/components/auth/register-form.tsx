@@ -131,8 +131,10 @@ export function RegisterForm() {
 
   const handleResendOTP = async () => {
     try {
-      await dispatch(resendSignupOTP(registeredEmail));
-      toast.success('OTP resent successfully!');
+      const response = await dispatch(resendSignupOTP(registeredEmail));
+      if (resendSignupOTP.fulfilled.match(response)) {
+        toast.success('OTP resent successfully!');
+      }
     } catch (error) {
       toast.error('Failed to resend OTP. Please try again.');
     }

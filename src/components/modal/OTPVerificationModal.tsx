@@ -46,6 +46,7 @@ export function OTPVerificationModal({
       if (verifySignupOTP.fulfilled.match(resultAction)) {
         const userRoles = resultAction.payload.user?.roles || [];
         onVerifySuccess(userRoles);
+       
       }
     } catch (error) {
       toast.error('OTP verification failed. Please try again.');
