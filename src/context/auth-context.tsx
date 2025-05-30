@@ -45,25 +45,20 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const dispatch = useAppDispatch();
   const { user, isLoading, error } = useAppSelector((state) => state.auth);
-
   const router = useRouter();
   const [isInitializing, setIsInitializing] = useState(true);
-
   useEffect(() => {
     let interval: NodeJS.Timeout;
-
     const validateSession = async () => {
       try {
         const token = localStorage.getItem('token');
         const userData = localStorage.getItem('user');
-
         if (!token || !userData) {
           if (user) {
             await dispatch(logoutUser());
           }
           return;
         }
-
         // Check if token is expired or about to expire
         if (isTokenExpired(token)) {
           const refreshToken = localStorage.getItem('refreshToken');
@@ -96,7 +91,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             }
           }
         }
-
         // Finally, verify the user data matches our token
         if (!user) {
           await dispatch(getCurrentUser()).unwrap();
@@ -109,13 +103,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       }
     };
-
     // Initial validation
     validateSession();
-
     // Set up interval for checking token (every 5 minutes)
     interval = setInterval(validateSession, 5 * 60 * 1000);
-
     // Listen for storage events
     const handleStorageChange = (event: StorageEvent) => {
       if (
@@ -155,14 +146,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = async () => {
     try {
       // First, dispatch logout action to clear auth state and localStorage
-
       await dispatch(logoutUser()).unwrap();
-
       await dispatch(clearFcmToken()).unwrap();
-
       // Then purge all persisted Redux states
       await persistor.purge();
-
       // Redirect to login page
       router.push('/login');
     } catch (err) {

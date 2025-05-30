@@ -13,11 +13,9 @@ export const useAdminDashboard = () => {
     (state) => state.adminDashboard
   );
 
-  // Auto-fetch data on mount if not already loaded or stale
   useEffect(() => {
     const STALE_TIME = 5 * 60 * 1000; // 5 minutes
     const now = Date.now();
-
     if (!data || !lastFetchTime || now - lastFetchTime > STALE_TIME) {
       dispatch(fetchAdminDashboard());
     }
