@@ -1,5 +1,6 @@
 import { decryptResponse, encryptPayload } from '@/utils/encryptionHelper';
 import axiosInstance from './axios-config';
+import { unregisterServiceWorker } from '@/service/firebaseMessaging';
 axiosInstance.defaults.withCredentials = true; //
 
 interface AuthResponse {
@@ -254,6 +255,7 @@ refreshToken: async (refreshToken: string) => {
       const response = await axiosInstance.post('/auth/logout', {
         platform: 'web',
       });
+    await   unregisterServiceWorker()
       console.log('Logout response:', response.data);
       // Check if logout was successful
       if (response.data && response.data.success) {

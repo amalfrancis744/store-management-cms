@@ -2,6 +2,7 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { authAPI } from '@/api/auth-api';
 import { User } from '@/types';
+import { unregisterServiceWorker } from '@/service/firebaseMessaging';
 
 interface AuthState {
   user: User | null;
@@ -297,7 +298,6 @@ export const logoutUser = createAsyncThunk(
 
       // Clear all localStorage items
       if (typeof window !== 'undefined') {
-        // Clear specific auth items
         localStorage.removeItem('user');
         localStorage.removeItem('token');
         localStorage.removeItem('activeRole');
@@ -308,7 +308,6 @@ export const logoutUser = createAsyncThunk(
         localStorage.removeItem('stores');
         localStorage.removeItem('socket');
 
-        // Clear all persist:* items (redux-persist)
         Object.keys(localStorage).forEach((key) => {
           if (key.startsWith('persist:')) {
             localStorage.removeItem(key);
@@ -316,24 +315,32 @@ export const logoutUser = createAsyncThunk(
         });
       }
 
+      // Delay unregistration to allow redirect to complete
+      setTimeout(async () => {
+        await unregisterServiceWorker();
+      }, 1000); // Delay by 1 second to ensure navigation completes
+
       return null;
     } catch (error: any) {
-      // Still clear localStorage even if API fails
+      // Clear localStorage even if API fails
       if (typeof window !== 'undefined') {
-        // Clear specific auth items
         localStorage.removeItem('user');
         localStorage.removeItem('token');
         localStorage.removeItem('activeRole');
         localStorage.removeItem('stores');
         localStorage.removeItem('socket');
 
-        // Clear all persist:* items (redux-persist)
         Object.keys(localStorage).forEach((key) => {
-          if (key.startsWith('persis:')) {
+          if (key.startsWith('persist:')) {
             localStorage.removeItem(key);
           }
         });
       }
+
+      // Delay unregistration on error as well
+      setTimeout(async () => {
+        await unregisterServiceWorker();
+      }, 1000);
 
       return rejectWithValue(error.response?.data?.message || 'Logout failed');
     }
