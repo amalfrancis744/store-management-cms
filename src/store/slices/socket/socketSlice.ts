@@ -283,7 +283,10 @@ export const markNotificationAsReadAPI = createAsyncThunk(
     console.log('Marking notification as read:', params);
     const { notificationId } = params;
     try {
-      await axiosInstance.put(`/notifications/${notificationId}/read`);
+      await axiosInstance.put(`/notifications/${notificationId}/read`  ,{
+               "isRead": true
+   
+      });
       return notificationId;
     } catch (error: any) {
       console.error('Failed to mark notification as read:', error);
