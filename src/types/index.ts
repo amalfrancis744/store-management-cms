@@ -224,13 +224,14 @@ export interface CurrentWorkspace {
   ordersSummary?: OrdersSummary;
 }
 
-export interface Member{
+export interface Member {
   id: string;
   name: string;
   email: string;
-  role: 'ADMIN' | 'MANAGER' | 'STAFF' | 'CUSTOMER'| string;
+  role: 'ADMIN' | 'MANAGER' | 'STAFF' | 'CUSTOMER' | string;
+  firstName;
+  lastName;
 }
-
 
 export interface OrderNew {
   id: string;

@@ -1,8 +1,7 @@
 import axios from 'axios';
 import { decryptResponse, encryptPayload } from '@/utils/encryptionHelper';
 
-const baseURL =
-  process.env.NEXT_PUBLIC_API_BASE_URL
+const baseURL = process.env.NEXT_PUBLIC_API_BASE_URL;
 
 const axiosInstance = axios.create({
   baseURL,
@@ -75,7 +74,9 @@ axiosInstance.interceptors.response.use(
 
       // Handle the standardized response format
       if (!response.data?.success || !response.data?.data?.token) {
-        throw new Error(response.data?.message || 'Invalid token refresh response');
+        throw new Error(
+          response.data?.message || 'Invalid token refresh response'
+        );
       }
 
       const newToken = response.data.data.token;

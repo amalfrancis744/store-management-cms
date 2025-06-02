@@ -64,7 +64,7 @@ export default function Notifications({
     workspaceId?: string
   ) => {
     if (!isRead) {
-      await markAsRead(notificationId, workspaceId);
+      await markAsRead(notificationId);
     }
   };
 
@@ -91,6 +91,9 @@ export default function Notifications({
   const displayNotifications = showAllNotifications
     ? notifications
     : unreadNotifications;
+
+  console.log('Notificatiomn data', displayNotifications);
+  console.log('Notifications     >>>>>> :', notifications);
 
   // Format notification type for display
   const formatNotificationType = (type: string) => {
@@ -243,12 +246,12 @@ export default function Notifications({
                       ? 'bg-blue-50 border-l-2 border-l-blue-500'
                       : ''
                   }`}
-                  // onClick={() =>
-                  //   handleNotificationClick(
-                  //     notification.id,
-                  //     notification.read || false
-                  //   )
-                  // }
+                  onClick={() =>
+                    handleNotificationClick(
+                      notification?.data.id,
+                      notification.read || false
+                    )
+                  }
                 >
                   <div className="flex w-full justify-between items-start">
                     <span

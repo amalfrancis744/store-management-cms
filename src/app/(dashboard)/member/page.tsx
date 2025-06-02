@@ -10,7 +10,7 @@ import {
   selectMembersError,
   selectUpdateLoading,
   selectRemoveLoading,
-  clearError
+  clearError,
 } from '@/store/slices/admin/memberSlice';
 import type { AppDispatch, RootState } from '@/store';
 import { AgGridReact } from 'ag-grid-react';
@@ -62,7 +62,16 @@ import {
 } from '@/components/ui/alert-dialog';
 
 // Icons
-import { Eye, Edit, Trash2, Search, Filter, UserPlus, Users } from 'lucide-react';
+import {
+  Eye,
+  Edit,
+  Trash2,
+  Search,
+  Filter,
+  UserPlus,
+  Users,
+} from 'lucide-react';
+import Image from 'next/image';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -83,7 +92,10 @@ interface Member {
   id: string;
   name: string;
   email: string;
-  
+  firstName: string;
+  lastName: string;
+  phone: number;
+  profileImageUrl: string;
 }
 
 // Role color mappings
@@ -105,8 +117,6 @@ const MembersPage = () => {
     (state: RootState) => state.workspace
   );
 
-  
-
   const gridRef = useRef<AgGridReact>(null);
   const [selectedMember, setSelectedMember] = useState<Member | null>(null);
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
@@ -114,14 +124,14 @@ const MembersPage = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   // Edit form states
-  const [editName, setEditName] = useState('');
+  const [editFirstName, setEditFirstName] = useState('');
+  const [editLastName, setEditLastName] = useState('');
   const [editEmail, setEditEmail] = useState('');
-  const [editRole, setEditRole] = useState( '');
+  const [editRole, setEditRole] = useState('');
 
   // Filtering states
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState<string[]>([]);
-
 
   // Filter members based on search and filters
   const filteredMembers = useMemo(() => {
@@ -187,7 +197,11 @@ const MembersPage = () => {
 
   // Member ID renderer
   const MemberIdRenderer = (props: any) => {
-    return <div className="font-mono text-xs">{props.value.substring(0, 8).toUpperCase()}</div>;
+    return (
+      <div className="font-mono text-xs">
+        {props.value.substring(0, 8).toUpperCase()}
+      </div>
+    );
   };
 
   // Action buttons renderer
@@ -224,7 +238,8 @@ const MembersPage = () => {
                 size="icon"
                 onClick={() => {
                   setSelectedMember(member);
-                  setEditName(member.name);
+                  setEditFirstName(member.firstName);
+                  setEditLastName(member.lastName);
                   setEditEmail(member.email);
                   setEditRole(member.role);
                   setIsEditDialogOpen(true);
@@ -321,8 +336,9 @@ const MembersPage = () => {
             workspaceId,
             memberId: selectedMember.id,
             memberData: {
-              name: editName,
-              email: editEmail,
+              firstName: editFirstName,
+              lastName: editLastName,
+
               role: editRole,
             },
           })
@@ -359,7 +375,8 @@ const MembersPage = () => {
   };
 
   const resetEditForm = () => {
-    setEditName('');
+    setEditFirstName('');
+    setEditLastName('');
     setEditEmail('');
     setEditRole('');
     setSelectedMember(null);
@@ -443,7 +460,6 @@ const MembersPage = () => {
               </DropdownMenu>
             </div>
           </div>
-
         </div>
 
         {/* <div className="mb-6">
@@ -460,21 +476,23 @@ const MembersPage = () => {
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Total Members</p>
+                  <p className="text-sm font-medium text-gray-600">
+                    Total Members
+                  </p>
                   <p className="text-2xl font-bold">{members.length}</p>
                 </div>
                 <Users className="h-8 w-8 text-blue-500" />
               </div>
             </CardContent>
           </Card>
-          
+
           <Card className="shadow-sm">
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-gray-600">Managers</p>
                   <p className="text-2xl font-bold">
-                    {members.filter(m => m.role === 'MANAGER').length}
+                    {members.filter((m) => m.role === 'MANAGER').length}
                   </p>
                 </div>
                 <Badge className="bg-blue-100 text-blue-800">MANAGER</Badge>
@@ -488,15 +506,13 @@ const MembersPage = () => {
                 <div>
                   <p className="text-sm font-medium text-gray-600">Staff</p>
                   <p className="text-2xl font-bold">
-                    {members.filter(m => m.role === 'STAFF').length}
+                    {members.filter((m) => m.role === 'STAFF').length}
                   </p>
                 </div>
                 <Badge className="bg-green-100 text-green-800">STAFF</Badge>
               </div>
             </CardContent>
           </Card>
-
-       
         </div>
 
         {filteredMembers.length === 0 ? (
@@ -543,18 +559,36 @@ const MembersPage = () => {
           <DialogHeader>
             <DialogTitle className="text-xl">Member Details</DialogTitle>
             <DialogDescription>
-              Member ID: <span className="font-mono">{selectedMember?.id.substring(0, 8).toUpperCase()}</span>
+              Member ID:{' '}
+              <span className="font-mono">
+                {selectedMember?.id.substring(0, 8).toUpperCase()}
+              </span>
             </DialogDescription>
           </DialogHeader>
 
           {selectedMember && (
             <div className="space-y-6 py-4">
               <div className="flex items-center gap-4">
-                <div className="w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white text-xl font-bold">
-                  {selectedMember.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                <div className="relative w-16 h-16 rounded-full bg-gradient-to-r from-blue-500 to-purple-500 flex items-center justify-center text-white text-xl font-bold overflow-hidden">
+                  {selectedMember.profileImageUrl ? (
+                    <Image
+                      src={selectedMember.profileImageUrl}
+                      alt={`${selectedMember.firstName} ${selectedMember.lastName}`}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : null}
+                  <span
+                    className={`${selectedMember.profileImageUrl ? 'hidden' : 'flex'} w-full h-full items-center justify-center`}
+                  >
+                    {selectedMember.firstName?.charAt(0)?.toUpperCase()}
+                  </span>
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-xl font-semibold">{selectedMember.name}</h3>
+                  <h3 className="text-xl font-semibold">
+                    {' '}
+                    {selectedMember.firstName} {selectedMember.lastName}
+                  </h3>
                   <p className="text-gray-600">{selectedMember.email}</p>
                   <RoleBadgeRenderer value={selectedMember.role} />
                 </div>
@@ -563,7 +597,9 @@ const MembersPage = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Card className="shadow-sm">
                   <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium">Member ID</CardTitle>
+                    <CardTitle className="text-sm font-medium">
+                      Member ID
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <p className="font-mono text-sm">{selectedMember.id}</p>
@@ -589,7 +625,8 @@ const MembersPage = () => {
                 </Button>
                 <Button
                   onClick={() => {
-                    setEditName(selectedMember.name);
+                    setEditFirstName(selectedMember.firstName);
+                    setEditLastName(selectedMember.lastName);
                     setEditEmail(selectedMember.email);
                     setEditRole(selectedMember.role);
                     setIsDetailsDialogOpen(false);
@@ -616,25 +653,24 @@ const MembersPage = () => {
 
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Name</label>
+              <label className="text-sm font-medium">First Name</label>
               <Input
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
+                value={editFirstName}
+                onChange={(e) => setEditFirstName(e.target.value)}
+                placeholder="Enter member name"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Last Name</label>
+
+              <Input
+                value={editLastName}
+                onChange={(e) => setEditLastName(e.target.value)}
                 placeholder="Enter member name"
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Email</label>
-              <Input
-                type="email"
-                value={editEmail}
-                onChange={(e) => setEditEmail(e.target.value)}
-                placeholder="Enter email address"
-              />
-            </div>
-
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <label className="text-sm font-medium">Role</label>
               <Select value={editRole} onValueChange={setEditRole}>
                 <SelectTrigger>
@@ -650,7 +686,7 @@ const MembersPage = () => {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
+            </div> */}
           </div>
 
           <DialogFooter>
@@ -665,7 +701,7 @@ const MembersPage = () => {
             </Button>
             <Button
               onClick={handleUpdateMember}
-              disabled={updateLoading || !editName.trim() || !editEmail.trim() || !editRole}
+              disabled={updateLoading || !editFirstName || !editLastName}
             >
               {updateLoading ? 'Updating...' : 'Update Member'}
             </Button>
@@ -674,13 +710,17 @@ const MembersPage = () => {
       </Dialog>
 
       {/* Delete Confirmation Dialog */}
-      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+      <AlertDialog
+        open={isDeleteDialogOpen}
+        onOpenChange={setIsDeleteDialogOpen}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Remove Member</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to remove <strong>{selectedMember?.name}</strong> from the workspace?
-              This action cannot be undone.
+              Are you sure you want to remove{' '}
+              <strong>{selectedMember?.name}</strong> from the workspace? This
+              action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

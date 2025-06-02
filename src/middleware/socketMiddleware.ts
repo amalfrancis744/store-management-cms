@@ -63,7 +63,6 @@ export const socketMiddleware: Middleware = (store) => {
 
       // Only show toast for the first few attempts to avoid spamming
       if (connectionAttempts < MAX_CONNECTION_ATTEMPTS) {
- 
         // Attempt to reconnect after a delay if not at max attempts
         if (
           connectionAttempts + 1 < MAX_CONNECTION_ATTEMPTS &&
@@ -234,43 +233,43 @@ export const socketMiddleware: Middleware = (store) => {
           console.log('Order data:', orderData);
           if (orderData) {
             // Transform the order data to match your Order interface
-        const newOrder: Order = {
-  id: orderData?.id,
-  status: orderData?.status,
-  totalAmount: orderData?.totalAmount,
-  placedAt: orderData?.placedAt,
-  paidAt: orderData?.paidAt || null, // Add this line
-  items: orderData?.items.map((item: any) => ({
-    quantity: item.quantity,
-    price: item.price,
-    variant: {
-      id: item.variant?.id || '',
-      title: item.variant?.title || '',
-      sku: item.variant?.sku || '',
-      stock: item.variant?.stock || 0,
-      color: item.variant?.color || '',
-      size: item.variant?.size || '',
-    },
-  })),
-  userId: orderData?.userId,
-  paymentMethod: orderData?.paymentMethod,
-  paymentStatus: orderData?.paymentStatus,
-  notes: orderData?.notes,
-  shippingAddress: {
-    address: orderData?.shippingAddress?.address || '',
-    street: orderData?.shippingAddress?.street || '',
-    city: orderData?.shippingAddress?.city || '',
-    region: orderData?.shippingAddress?.region || '',
-    postalCode: orderData?.shippingAddress?.postalCode || '',
-    country: orderData?.shippingAddress?.country || '',
-  },
-  user: {
-    firstName: orderData.user?.firstName || '',
-    lastName: orderData?.user?.lastName || '',
-    email: orderData?.user?.email || '',
-    phone: orderData?.user?.phone || '',
-  },
-};
+            const newOrder: Order = {
+              id: orderData?.id,
+              status: orderData?.status,
+              totalAmount: orderData?.totalAmount,
+              placedAt: orderData?.placedAt,
+              paidAt: orderData?.paidAt || null, // Add this line
+              items: orderData?.items.map((item: any) => ({
+                quantity: item.quantity,
+                price: item.price,
+                variant: {
+                  id: item.variant?.id || '',
+                  title: item.variant?.title || '',
+                  sku: item.variant?.sku || '',
+                  stock: item.variant?.stock || 0,
+                  color: item.variant?.color || '',
+                  size: item.variant?.size || '',
+                },
+              })),
+              userId: orderData?.userId,
+              paymentMethod: orderData?.paymentMethod,
+              paymentStatus: orderData?.paymentStatus,
+              notes: orderData?.notes,
+              shippingAddress: {
+                address: orderData?.shippingAddress?.address || '',
+                street: orderData?.shippingAddress?.street || '',
+                city: orderData?.shippingAddress?.city || '',
+                region: orderData?.shippingAddress?.region || '',
+                postalCode: orderData?.shippingAddress?.postalCode || '',
+                country: orderData?.shippingAddress?.country || '',
+              },
+              user: {
+                firstName: orderData.user?.firstName || '',
+                lastName: orderData?.user?.lastName || '',
+                email: orderData?.user?.email || '',
+                phone: orderData?.user?.phone || '',
+              },
+            };
 
             // Dispatch the action to add the new order
             store.dispatch(addNewAssignedOrder(newOrder));
@@ -284,7 +283,7 @@ export const socketMiddleware: Middleware = (store) => {
           console.log('Order data:', orderData);
 
           if (orderData && orderData.order) {
-            const newOrder:any = {
+            const newOrder: any = {
               id: orderData?.order?.id,
               status: orderData.order.status,
               totalAmount: orderData.order.totalAmount,

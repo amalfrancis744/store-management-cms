@@ -54,7 +54,6 @@ interface User {
   updatedAt: string;
   locationId: string | null;
   isDeleted: boolean;
-  
 }
 
 interface Order {
@@ -79,7 +78,6 @@ interface Order {
   shippingAddress: Address;
   billingAddress: Address;
   assignedStaff?: StaffMember | string;
-
 }
 
 interface OrderState {

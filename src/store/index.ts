@@ -137,8 +137,8 @@ const adminDashboardPersistConfig = {
 const staffManagePersistConfig = {
   key: 'staffManage',
   storage,
-  whitelist: ['staff', 'loading', 'error'], 
-}
+  whitelist: ['staff', 'loading', 'error'],
+};
 
 // Persist config for member
 
@@ -243,10 +243,10 @@ const rootReducer = (state: any, action: any) => {
     storage.removeItem('persist:socket');
     storage.removeItem('persist:staff');
 
-    storage.removeItem('persist:notification'); 
-    storage.removeItem('persist:adminDashboard'); 
-    storage.removeItem('persist:member'); 
-    storage.removeItem('persist:staffManage'); 
+    storage.removeItem('persist:notification');
+    storage.removeItem('persist:adminDashboard');
+    storage.removeItem('persist:member');
+    storage.removeItem('persist:staffManage');
 
     // Return undefined to let the reducers return their initial state
     state = undefined;

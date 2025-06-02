@@ -279,16 +279,11 @@ export const fetchNotifications = createAsyncThunk(
 // Async thunk for marking notification as read
 export const markNotificationAsReadAPI = createAsyncThunk(
   'socket/markNotificationAsRead',
-  async (
-    params: { notificationId: string; workspaceId: string },
-    { rejectWithValue }
-  ) => {
+  async (params: { notificationId: string }, { rejectWithValue }) => {
     console.log('Marking notification as read:', params);
-    const { notificationId, workspaceId } = params;
+    const { notificationId } = params;
     try {
-      await axiosInstance.put(
-        `/notifications/${workspaceId}/${notificationId}/read`
-      );
+      await axiosInstance.put(`/notifications/${notificationId}/read`);
       return notificationId;
     } catch (error: any) {
       console.error('Failed to mark notification as read:', error);
@@ -302,7 +297,10 @@ export const markNotificationAsReadAPI = createAsyncThunk(
 // Async thunk for marking all notifications as read
 export const markAllNotificationsAsReadAPI = createAsyncThunk(
   'socket/markAllNotificationsAsRead',
-  async (workspaceId?: number, { rejectWithValue }) => {
+  async (
+    { workspaceId }: { workspaceId?: number } = {},
+    { rejectWithValue }
+  ) => {
     try {
       const url = workspaceId
         ? `/notifications/mark-all-read?workspaceId=${workspaceId}`

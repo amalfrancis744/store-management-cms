@@ -3,12 +3,12 @@ import { useState, useRef, useMemo, useCallback, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useSelector, useDispatch } from 'react-redux';
 import { RootState, AppDispatch } from '@/store';
-import { 
-  fetchStaff, 
-  inviteStaff, 
-  updateStaff, 
-  deleteStaff, 
-  clearError 
+import {
+  fetchStaff,
+  inviteStaff,
+  updateStaff,
+  deleteStaff,
+  clearError,
 } from '@/store/slices/manager/staffManageSlice';
 import { themeQuartz, iconSetMaterial } from 'ag-grid-community';
 import { AgGridReact } from 'ag-grid-react';
@@ -16,7 +16,15 @@ import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Search, Filter, Eye, Trash2, Edit, Plus, UserPlus } from 'lucide-react';
+import {
+  Search,
+  Filter,
+  Eye,
+  Trash2,
+  Edit,
+  Plus,
+  UserPlus,
+} from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -48,7 +56,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { format } from 'date-fns';
-import { toast } from 'sonner';
+import { ToastContainer, toast } from 'react-toastify';
 
 // Register AG Grid modules
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -146,9 +154,8 @@ export default function UserListPage() {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
   const workspaceId = useSelector((state: RootState) => state.auth.workspaceId);
-  const { staff, loading, error, inviteLoading, updateLoading, deleteLoading } = useSelector(
-    (state: RootState) => state.staffManage
-  );
+  const { staff, loading, error, inviteLoading, updateLoading, deleteLoading } =
+    useSelector((state: RootState) => state.staffManage);
 
   const gridRef = useRef<AgGridReact>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -195,11 +202,16 @@ export default function UserListPage() {
 
   // Filter staff members
   const filteredStaffMembers = useMemo(() => {
+    console.log('filtered data', staff);
     return staff.filter((staffMember) => {
       const matchesSearch =
-        staffMember.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        staffMember.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        staffMember.email.toLowerCase().includes(searchQuery.toLowerCase());
+        staffMember.firstName
+          ?.toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
+        staffMember.lastName
+          ?.toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
+        staffMember.email?.toLowerCase().includes(searchQuery.toLowerCase());
 
       const matchesStatus =
         statusFilter.length === 0 || statusFilter.includes(staffMember.status);
@@ -225,17 +237,19 @@ export default function UserListPage() {
     }
 
     try {
-      await dispatch(inviteStaff({
-        workspaceId,
-        email: inviteForm.email,
-        role: inviteForm.role,
-      })).unwrap();
-      
+      await dispatch(
+        inviteStaff({
+          workspaceId,
+          email: inviteForm.email,
+          role: inviteForm.role,
+        })
+      ).unwrap();
+
       toast.success('Staff invitation sent successfully');
       setIsInviteDialogOpen(false);
       setInviteForm({ email: '', role: '' });
     } catch (error) {
-      toast.error('Failed to invite staff member');
+      toast.error(error);
     }
   }, [dispatch, workspaceId, inviteForm]);
 
@@ -244,18 +258,20 @@ export default function UserListPage() {
     if (!workspaceId || !selectedStaff) return;
 
     try {
-      await dispatch(updateStaff({
-        id: selectedStaff.id,
-        workspaceId,
-        data: {
-          firstName: editForm.firstName,
-          lastName: editForm.lastName,
-          email: editForm.email,
-          phone: editForm.phone,
-          role: editForm.role,
-        },
-      })).unwrap();
-      
+      await dispatch(
+        updateStaff({
+          targetUserId: selectedStaff.id,
+          workspaceId,
+          data: {
+            firstName: editForm.firstName,
+            lastName: editForm.lastName,
+            email: editForm.email,
+            phone: editForm.phone,
+            role: editForm.role,
+          },
+        })
+      ).unwrap();
+
       toast.success('Staff member updated successfully');
       setIsEditDialogOpen(false);
       setSelectedStaff(null);
@@ -269,11 +285,14 @@ export default function UserListPage() {
     if (!workspaceId || !staffToDelete) return;
 
     try {
-      await dispatch(deleteStaff({
-        id: staffToDelete.id,
-        workspaceId,
-      })).unwrap();
-      
+      await dispatch(
+        deleteStaff({
+          id: staffToDelete.id,
+          workspaceId,
+          email: staffToDelete.email,
+        })
+      ).unwrap();
+
       toast.success('Staff member deleted successfully');
       setIsDeleteDialogOpen(false);
       setStaffToDelete(null);
@@ -412,7 +431,7 @@ export default function UserListPage() {
                     <p>View Orders</p>
                   </TooltipContent>
                 </Tooltip>
-                
+
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
@@ -487,6 +506,7 @@ export default function UserListPage() {
 
   return (
     <div className="w-full max-w-[1600px] mx-auto px-3 py-2 md:px-5 md:py-2">
+      <ToastContainer />
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 md:p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-semibold text-gray-800">
@@ -599,7 +619,7 @@ export default function UserListPage() {
                 placeholder="Enter email address"
                 value={inviteForm.email}
                 onChange={(e) =>
-                  setInviteForm(prev => ({ ...prev, email: e.target.value }))
+                  setInviteForm((prev) => ({ ...prev, email: e.target.value }))
                 }
               />
             </div>
@@ -608,7 +628,7 @@ export default function UserListPage() {
               <Select
                 value={inviteForm.role}
                 onValueChange={(value) =>
-                  setInviteForm(prev => ({ ...prev, role: value }))
+                  setInviteForm((prev) => ({ ...prev, role: value }))
                 }
               >
                 <SelectTrigger>
@@ -664,7 +684,10 @@ export default function UserListPage() {
                   placeholder="First name"
                   value={editForm.firstName}
                   onChange={(e) =>
-                    setEditForm(prev => ({ ...prev, firstName: e.target.value }))
+                    setEditForm((prev) => ({
+                      ...prev,
+                      firstName: e.target.value,
+                    }))
                   }
                 />
               </div>
@@ -675,7 +698,10 @@ export default function UserListPage() {
                   placeholder="Last name"
                   value={editForm.lastName}
                   onChange={(e) =>
-                    setEditForm(prev => ({ ...prev, lastName: e.target.value }))
+                    setEditForm((prev) => ({
+                      ...prev,
+                      lastName: e.target.value,
+                    }))
                   }
                 />
               </div>
@@ -688,7 +714,7 @@ export default function UserListPage() {
                 placeholder="Email address"
                 value={editForm.email}
                 onChange={(e) =>
-                  setEditForm(prev => ({ ...prev, email: e.target.value }))
+                  setEditForm((prev) => ({ ...prev, email: e.target.value }))
                 }
               />
             </div>
@@ -700,7 +726,7 @@ export default function UserListPage() {
                 placeholder="Phone number (optional)"
                 value={editForm.phone}
                 onChange={(e) =>
-                  setEditForm(prev => ({ ...prev, phone: e.target.value }))
+                  setEditForm((prev) => ({ ...prev, phone: e.target.value }))
                 }
               />
             </div>
@@ -709,7 +735,7 @@ export default function UserListPage() {
               <Select
                 value={editForm.role}
                 onValueChange={(value) =>
-                  setEditForm(prev => ({ ...prev, role: value }))
+                  setEditForm((prev) => ({ ...prev, role: value }))
                 }
               >
                 <SelectTrigger>
@@ -738,7 +764,12 @@ export default function UserListPage() {
             </Button>
             <Button
               onClick={handleEditSubmit}
-              disabled={!editForm.firstName || !editForm.lastName || !editForm.email || updateLoading}
+              disabled={
+                !editForm.firstName ||
+                !editForm.lastName ||
+                !editForm.email ||
+                updateLoading
+              }
             >
               {updateLoading ? 'Updating...' : 'Update Staff'}
             </Button>
@@ -752,8 +783,9 @@ export default function UserListPage() {
           <DialogHeader>
             <DialogTitle>Delete Staff Member</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete {staffToDelete?.firstName} {staffToDelete?.lastName}? 
-              This action cannot be undone and will remove all associated data.
+              Are you sure you want to delete {staffToDelete?.firstName}{' '}
+              {staffToDelete?.lastName}? This action cannot be undone and will
+              remove all associated data.
             </DialogDescription>
           </DialogHeader>
 
@@ -799,7 +831,8 @@ export default function UserListPage() {
           {selectedStaff && (
             <ScrollArea className="max-h-[calc(90vh-120px)] px-6 pb-6">
               <div className="space-y-6">
-                {!selectedStaff.assignedOrders || selectedStaff.assignedOrders.length === 0 ? (
+                {!selectedStaff.assignedOrders ||
+                selectedStaff.assignedOrders.length === 0 ? (
                   <div className="text-center py-8">
                     <p className="text-gray-500">
                       No orders assigned to this staff member.

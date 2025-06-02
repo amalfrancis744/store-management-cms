@@ -50,7 +50,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 // Icons
-import { Eye, User, Search, Filter, Calendar, } from 'lucide-react';
+import { Eye, User, Search, Filter, Calendar } from 'lucide-react';
 import { useStaffMembers } from '@/api/manager/getAllStaff-api';
 ModuleRegistry.registerModules([AllCommunityModule]);
 
@@ -133,9 +133,7 @@ interface Order {
   shippingAddress: Address;
   billingAddress: Address;
   assignedStaff?: StaffMember | string;
-  assignedTo?:string;
-  
-
+  assignedTo?: string;
 }
 // Status and payment color mappings
 const statusColors: Record<string, string> = {
@@ -188,7 +186,6 @@ const OrdersPage = () => {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
   const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false);
-
 
   // Filtering states
   const [searchQuery, setSearchQuery] = useState('');

@@ -26,7 +26,7 @@ export default function ProductStoreMainPage() {
   const router = useRouter();
   const dispatch = useDispatch<AppDispatch>();
   const [searchQuery, setSearchQuery] = useState('');
-  
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(20);
@@ -50,11 +50,13 @@ export default function ProductStoreMainPage() {
 
   // Fetch stores when dependencies change
   useEffect(() => {
-    dispatch(fetchStores({
-      search: searchQuery,
-      page: currentPage,
-      limit: itemsPerPage
-    }));
+    dispatch(
+      fetchStores({
+        search: searchQuery,
+        page: currentPage,
+        limit: itemsPerPage,
+      })
+    );
   }, [dispatch, currentPage, itemsPerPage, searchQuery]);
 
   // Handle search input
@@ -86,35 +88,35 @@ export default function ProductStoreMainPage() {
   const getPageNumbers = () => {
     const pages = [];
     const maxVisiblePages = 5;
-    
+
     // Always show first page
     pages.push(1);
-    
+
     // Show ellipsis if current page is far from start
     if (currentPage > 3) {
       pages.push('...');
     }
-    
+
     // Show pages around current page
     const start = Math.max(2, currentPage - 1);
     const end = Math.min(totalPages - 1, currentPage + 1);
-    
+
     for (let i = start; i <= end; i++) {
       if (!pages.includes(i)) {
         pages.push(i);
       }
     }
-    
+
     // Show ellipsis if current page is far from end
     if (currentPage < totalPages - 2) {
       pages.push('...');
     }
-    
+
     // Always show last page if different from first
     if (totalPages > 1 && !pages.includes(totalPages)) {
       pages.push(totalPages);
     }
-    
+
     return pages;
   };
 
@@ -158,14 +160,18 @@ export default function ProductStoreMainPage() {
               <span className="text-sm text-gray-600">Items per page:</span>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm" className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex items-center gap-2"
+                  >
                     {itemsPerPage}
                     <ChevronDown className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   {[10, 20, 50, 100].map((num) => (
-                    <DropdownMenuItem 
+                    <DropdownMenuItem
                       key={num}
                       onClick={() => handleItemsPerPageChange(num)}
                     >
@@ -206,7 +212,8 @@ export default function ProductStoreMainPage() {
                     distance: store.distance || 'N/A',
                     deliveryTime: store.deliveryTime || 'N/A',
                     categories: store.categories || [],
-                    description: store.description || 'No description available',
+                    description:
+                      store.description || 'No description available',
                     featured: store.featured || false,
                   }}
                   onClick={() => handleStoreClick(store.id)}
@@ -220,7 +227,7 @@ export default function ProductStoreMainPage() {
                 <div className="text-sm text-gray-600">
                   Page {currentPage} of {totalPages}
                 </div>
-                
+
                 <div className="flex items-center gap-2">
                   <Button
                     variant="outline"
@@ -240,7 +247,9 @@ export default function ProductStoreMainPage() {
                           <span className="px-3 py-2 text-gray-500">...</span>
                         ) : (
                           <Button
-                            variant={currentPage === page ? "default" : "outline"}
+                            variant={
+                              currentPage === page ? 'default' : 'outline'
+                            }
                             size="sm"
                             onClick={() => handlePageChange(page as number)}
                             className="min-w-[40px]"

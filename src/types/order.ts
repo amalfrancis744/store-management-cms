@@ -48,5 +48,4 @@ export interface Order {
   paidAt?: string | null;
   paymentDetails?: any;
   billingAddress?: {};
- 
 }

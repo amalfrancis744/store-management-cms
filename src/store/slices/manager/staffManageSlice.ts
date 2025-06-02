@@ -52,7 +52,7 @@ interface InviteStaffPayload {
 }
 
 interface UpdateStaffPayload {
-  id: string;
+  targetUserId: string;
   workspaceId: string;
   data: Partial<StaffMember>;
 }
@@ -92,7 +92,9 @@ export const fetchStaff = createAsyncThunk(
       return response.data.data;
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data?.message || error.message || 'Failed to fetch staff members'
+        error.response?.data?.message ||
+          error.message ||
+          'Failed to fetch staff members'
       );
     }
   }
@@ -103,7 +105,7 @@ export const inviteStaff = createAsyncThunk(
   async (payload: InviteStaffPayload, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.post(
-        `/orders/workspaces/${payload.workspaceId}/staff/invite`,
+        `/workspaces/${payload.workspaceId}/invite`,
         {
           email: payload.email,
           role: payload.role,
@@ -112,7 +114,9 @@ export const inviteStaff = createAsyncThunk(
       return response.data.data;
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data?.message || error.message || 'Failed to invite staff member'
+        error.response?.data?.message ||
+          error.message ||
+          'Failed to invite staff member'
       );
     }
   }
@@ -123,13 +127,15 @@ export const updateStaff = createAsyncThunk(
   async (payload: UpdateStaffPayload, { rejectWithValue }) => {
     try {
       const response = await axiosInstance.put(
-        `/orders/workspaces/${payload.workspaceId}/staff/${payload.id}`,
+        `/auth/${payload.workspaceId}/user/${payload.targetUserId}`,
         payload.data
       );
       return response.data.data;
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data?.message || error.message || 'Failed to update staff member'
+        error.response?.data?.message ||
+          error.message ||
+          'Failed to update staff member'
       );
     }
   }
@@ -137,15 +143,21 @@ export const updateStaff = createAsyncThunk(
 
 export const deleteStaff = createAsyncThunk(
   'staff/deleteStaff',
-  async (payload: DeleteStaffPayload, { rejectWithValue }) => {
+  async (
+    payload: DeleteStaffPayload & { email: string },
+    { rejectWithValue }
+  ) => {
     try {
       await axiosInstance.delete(
-        `/orders/workspaces/${payload.workspaceId}/staff/${payload.id}`
+        `/workspaces/${payload.workspaceId}/removeUser`,
+        { data: { email: payload.email } } // Note the 'data' property here
       );
       return payload.id;
     } catch (error: any) {
       return rejectWithValue(
-        error.response?.data?.message || error.message || 'Failed to delete staff member'
+        error.response?.data?.message ||
+          error.message ||
+          'Failed to delete staff member'
       );
     }
   }
@@ -170,59 +182,75 @@ const staffSlice = createSlice({
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchStaff.fulfilled, (state, action: PayloadAction<StaffMember[]>) => {
-        state.loading = false;
-        state.staff = action.payload;
-        state.error = null;
-      })
+      .addCase(
+        fetchStaff.fulfilled,
+        (state, action: PayloadAction<StaffMember[]>) => {
+          state.loading = false;
+          state.staff = action.payload;
+          state.error = null;
+        }
+      )
       .addCase(fetchStaff.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       })
-      
+
       // Invite Staff
       .addCase(inviteStaff.pending, (state) => {
         state.inviteLoading = true;
         state.error = null;
       })
-      .addCase(inviteStaff.fulfilled, (state, action: PayloadAction<StaffMember>) => {
-        state.inviteLoading = false;
-        state.staff.push(action.payload);
-        state.error = null;
-      })
+      .addCase(
+        inviteStaff.fulfilled,
+        (state, action: PayloadAction<StaffMember>) => {
+          state.inviteLoading = false;
+          state.staff.push(action.payload);
+          state.error = null;
+        }
+      )
       .addCase(inviteStaff.rejected, (state, action) => {
         state.inviteLoading = false;
         state.error = action.payload as string;
       })
-      
+
       // Update Staff
       .addCase(updateStaff.pending, (state) => {
         state.updateLoading = true;
         state.error = null;
       })
-      .addCase(updateStaff.fulfilled, (state, action: PayloadAction<StaffMember>) => {
-        state.updateLoading = false;
-        const index = state.staff.findIndex(staff => staff.id === action.payload.id);
-        if (index !== -1) {
-          state.staff[index] = action.payload;
+      .addCase(
+        updateStaff.fulfilled,
+        (state, action: PayloadAction<StaffMember>) => {
+          state.updateLoading = false;
+          const index = state.staff.findIndex(
+            (staff) => staff.id === action.payload.id
+          );
+          if (index !== -1) {
+            state.staff[index] = action.payload;
+          }
+          state.error = null;
         }
-        state.error = null;
-      })
+      )
       .addCase(updateStaff.rejected, (state, action) => {
         state.updateLoading = false;
         state.error = action.payload as string;
       })
-      
+
       // Delete Staff
       .addCase(deleteStaff.pending, (state) => {
         state.deleteLoading = true;
         state.error = null;
       })
-      .addCase(deleteStaff.fulfilled, (state, action: PayloadAction<string>) => {
-        state.deleteLoading = false;
-        state.staff = state.staff.filter(staff => staff.id !== action.payload);
-        state.error = null;
-      })
+      .addCase(
+        deleteStaff.fulfilled,
+        (state, action: PayloadAction<string>) => {
+          state.deleteLoading = false;
+          state.staff = state.staff.filter(
+            (staff) => staff.id !== action.payload
+          );
+          state.error = null;
+        }
+      )
       .addCase(deleteStaff.rejected, (state, action) => {
         state.deleteLoading = false;
         state.error = action.payload as string;

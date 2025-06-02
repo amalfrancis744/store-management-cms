@@ -226,7 +226,10 @@ const orderSlice = createSlice({
       }
     },
 
-    UpdateCustomerOrderStatusByStaff: (state, action: PayloadAction<{ id: string; status: string }>) => {
+    UpdateCustomerOrderStatusByStaff: (
+      state,
+      action: PayloadAction<{ id: string; status: string }>
+    ) => {
       const { id: orderId, status: newStatus } = action.payload;
       console.log('Updating order status by staff:', orderId, newStatus);
 
@@ -369,7 +372,7 @@ export const {
   setCurrentOrder,
   clearCurrentOrder,
   updateCustomerOrderStatus,
-  UpdateCustomerOrderStatusByStaff
+  UpdateCustomerOrderStatusByStaff,
 } = orderSlice.actions;
 
 // Export selectors

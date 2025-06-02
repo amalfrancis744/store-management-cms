@@ -1,13 +1,12 @@
 import CryptoJS from 'crypto-js';
 
 const ENCRYPTION_KEY = process.env.NEXT_PUBLIC_ENCRYPTION_KEY_NEW;
-const IV_LENGTH = 16; 
-
+const IV_LENGTH = 16;
 
 // encryption
 export const encryptPayload = (data: object) => {
   const key = CryptoJS.enc.Utf8.parse(ENCRYPTION_KEY);
-  const iv = CryptoJS.lib.WordArray.random(IV_LENGTH); 
+  const iv = CryptoJS.lib.WordArray.random(IV_LENGTH);
   const stringifiedData = JSON.stringify(data);
   const encrypted = CryptoJS.AES.encrypt(stringifiedData, key, {
     iv,
@@ -24,8 +23,6 @@ interface EncryptedData {
   iv: string;
   encryptedData: string;
 }
-
-
 
 // decryption
 export const decryptResponse = <T>(encryptedResponse: EncryptedData): T => {

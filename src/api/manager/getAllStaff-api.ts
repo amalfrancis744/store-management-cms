@@ -42,5 +42,3 @@ export const useStaffMembers = (workspaceId: string) => {
     enabled: !!workspaceId,
   });
 };
-
-

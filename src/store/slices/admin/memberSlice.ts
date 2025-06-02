@@ -1,6 +1,6 @@
-import { memberAPI } from "@/api/admin/member-api";
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { Member } from "@/types";
+import { memberAPI } from '@/api/admin/member-api';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { Member } from '@/types';
 
 // Async thunks
 export const getAllMembers = createAsyncThunk(
@@ -11,19 +11,26 @@ export const getAllMembers = createAsyncThunk(
       console.log('Fetched members:', response.data.members);
       return response.data.members;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to fetch members');
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to fetch members'
+      );
     }
   }
 );
 
 export const removeMember = createAsyncThunk(
   'members/removeMember',
-  async ({ workspaceId, memberId }: { workspaceId: string; memberId: string }, { rejectWithValue }) => {
+  async (
+    { workspaceId, memberId }: { workspaceId: string; memberId: string },
+    { rejectWithValue }
+  ) => {
     try {
       const response = await memberAPI.removeMember(workspaceId, memberId);
       return { memberId, success: response.data.success };
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to remove member');
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to remove member'
+      );
     }
   }
 );
@@ -31,15 +38,24 @@ export const removeMember = createAsyncThunk(
 export const updateMember = createAsyncThunk(
   'members/updateMember',
   async (
-    { workspaceId, memberId, memberData }: 
-    { workspaceId: string; memberId: string; memberData: Partial<Member> },
+    {
+      workspaceId,
+      memberId,
+      memberData,
+    }: { workspaceId: string; memberId: string; memberData: Partial<Member> },
     { rejectWithValue }
   ) => {
     try {
-      const response = await memberAPI.updateMember(workspaceId, memberId, memberData);
+      const response = await memberAPI.updateMember(
+        workspaceId,
+        memberId,
+        memberData
+      );
       return response.data.member;
     } catch (error: any) {
-      return rejectWithValue(error.response?.data?.message || 'Failed to update member');
+      return rejectWithValue(
+        error.response?.data?.message || 'Failed to update member'
+      );
     }
   }
 );
@@ -100,7 +116,7 @@ const memberSlice = createSlice({
         state.removeLoading = false;
         if (action.payload.success) {
           state.members = state.members.filter(
-            member => member.id !== action.payload.memberId
+            (member) => member.id !== action.payload.memberId
           );
         }
       })
@@ -118,7 +134,9 @@ const memberSlice = createSlice({
       .addCase(updateMember.fulfilled, (state, action) => {
         state.updateLoading = false;
         const updatedMember = action.payload;
-        const index = state.members.findIndex(member => member.id === updatedMember.id);
+        const index = state.members.findIndex(
+          (member) => member.id === updatedMember.id
+        );
         if (index !== -1) {
           state.members[index] = updatedMember;
         }
@@ -135,8 +153,13 @@ export const { clearError, resetMemberState } = memberSlice.actions;
 export default memberSlice.reducer;
 
 // Selectors
-export const selectMembers = (state: { members: MemberState }) => state.members.members;
-export const selectMembersLoading = (state: { members: MemberState }) => state.members.loading;
-export const selectMembersError = (state: { members: MemberState }) => state.members.error;
-export const selectUpdateLoading = (state: { members: MemberState }) => state.members.updateLoading;
-export const selectRemoveLoading = (state: { members: MemberState }) => state.members.removeLoading;
+export const selectMembers = (state: { members: MemberState }) =>
+  state.members.members;
+export const selectMembersLoading = (state: { members: MemberState }) =>
+  state.members.loading;
+export const selectMembersError = (state: { members: MemberState }) =>
+  state.members.error;
+export const selectUpdateLoading = (state: { members: MemberState }) =>
+  state.members.updateLoading;
+export const selectRemoveLoading = (state: { members: MemberState }) =>
+  state.members.removeLoading;

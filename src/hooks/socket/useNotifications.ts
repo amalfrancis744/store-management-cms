@@ -141,16 +141,12 @@ export const useNotifications = (options: UseNotificationsOptions = {}) => {
    * Mark a specific notification as read (local + API)
    */
   const markAsRead = useCallback(
-    async (id: string, workspaceId: string) => {
+    async (id: string) => {
       try {
-        console.log(
-          'Marking notification as read  markASread:',
-          id,
-          workspaceId
-        );
+        console.log('Marking notification as read  markASread:', id);
         // Update API first
         await dispatch(
-          markNotificationAsReadAPI({ notificationId: id, workspaceId })
+          markNotificationAsReadAPI({ notificationId: id })
         ).unwrap();
         // Local state is updated by the fulfilled case
       } catch (error) {

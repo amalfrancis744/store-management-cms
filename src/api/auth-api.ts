@@ -82,27 +82,29 @@ export const authAPI = {
   },
 
   // Refresh token
-refreshToken: async (refreshToken: string) => {
-  try {
-    const response = await axiosInstance.post('/auth/refresh-token', { refreshToken });
+  refreshToken: async (refreshToken: string) => {
+    try {
+      const response = await axiosInstance.post('/auth/refresh-token', {
+        refreshToken,
+      });
 
-    // Handle the standardized response format
-    if (response.data?.success && response.data?.data) {
-      return {
-        data: {
-          token: response.data.data.token,
-          refreshToken: response.data.data.refreshToken
-        }
-      };
+      // Handle the standardized response format
+      if (response.data?.success && response.data?.data) {
+        return {
+          data: {
+            token: response.data.data.token,
+            refreshToken: response.data.data.refreshToken,
+          },
+        };
+      }
+      throw new Error(
+        response.data?.message || 'Invalid refresh token response'
+      );
+    } catch (error) {
+      console.error('Refresh token failed:', error);
+      throw error;
     }
-    throw new Error(response.data?.message || 'Invalid refresh token response');
-  } catch (error) {
-    console.error('Refresh token failed:', error);
-    throw error;
-  }
-},
-
-
+  },
 
   register: async (userData: {
     firstName: string;
@@ -255,7 +257,7 @@ refreshToken: async (refreshToken: string) => {
       const response = await axiosInstance.post('/auth/logout', {
         platform: 'web',
       });
-    await   unregisterServiceWorker()
+      await unregisterServiceWorker();
       console.log('Logout response:', response.data);
       // Check if logout was successful
       if (response.data && response.data.success) {

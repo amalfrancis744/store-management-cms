@@ -39,14 +39,14 @@ const nextConfig = {
         headers: [
           {
             key: 'Service-Worker-Allowed',
-            value: '/'
+            value: '/',
           },
           {
             key: 'Cache-Control',
-            value: 'public, max-age=0, must-revalidate'
-          }
-        ]
-      }
+            value: 'public, max-age=0, must-revalidate',
+          },
+        ],
+      },
     ];
   },
   webpack: (config) => {
@@ -55,10 +55,10 @@ const nextConfig = {
       child_process: false,
       fs: false,
       net: false,
-      tls: false
+      tls: false,
     };
     return config;
-  }
+  },
 };
 
 module.exports = nextConfig;

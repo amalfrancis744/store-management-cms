@@ -1,6 +1,10 @@
 // store/slices/notificationSlice.ts
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { messaging, getToken, registerServiceWorker } from '@/service/firebaseMessaging';
+import {
+  messaging,
+  getToken,
+  registerServiceWorker,
+} from '@/service/firebaseMessaging';
 import { authAPI } from '@/api/auth-api';
 
 interface NotificationState {
@@ -33,18 +37,23 @@ const MAX_RETRY_ATTEMPTS = 3;
 const RETRY_DELAY_MS = 2000; // 2 seconds
 
 // Utility function to wait/delay
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Enhanced token retrieval with retry logic
-const getFCMTokenWithRetry = async (messagingInstance: any, maxRetries: number = MAX_RETRY_ATTEMPTS): Promise<string | null> => {
+const getFCMTokenWithRetry = async (
+  messagingInstance: any,
+  maxRetries: number = MAX_RETRY_ATTEMPTS
+): Promise<string | null> => {
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
-      console.log(`Attempting to get FCM token (attempt ${attempt}/${maxRetries})`);
-      
+      console.log(
+        `Attempting to get FCM token (attempt ${attempt}/${maxRetries})`
+      );
+
       const fcmToken = await getToken(messagingInstance, {
         vapidKey: VAPID_KEY,
       });
-      
+
       if (fcmToken) {
         console.log('FCM Token retrieved successfully:', fcmToken);
         return fcmToken;
@@ -53,32 +62,36 @@ const getFCMTokenWithRetry = async (messagingInstance: any, maxRetries: number =
       }
     } catch (error: any) {
       // console.error(`Attempt ${attempt} failed:`, error.message);
-      
+
       // If it's the last attempt, throw the error
       if (attempt === maxRetries) {
         throw error;
       }
-      
+
       // Wait before retrying
       console.log(`Waiting ${RETRY_DELAY_MS}ms before retry...`);
       await delay(RETRY_DELAY_MS);
     }
   }
-  
+
   return null;
 };
 
 // Check if service worker is ready
-const waitForServiceWorkerReady = async (maxWaitTime: number = 10000): Promise<boolean> => {
+const waitForServiceWorkerReady = async (
+  maxWaitTime: number = 10000
+): Promise<boolean> => {
   if (!('serviceWorker' in navigator)) {
     return false;
   }
 
   const startTime = Date.now();
-  
+
   while (Date.now() - startTime < maxWaitTime) {
     try {
-      const registration = await navigator.serviceWorker.getRegistration('/firebase-messaging-sw.js');
+      const registration = await navigator.serviceWorker.getRegistration(
+        '/firebase-messaging-sw.js'
+      );
       if (registration && registration.active) {
         console.log('Service Worker is ready');
         return true;
@@ -89,7 +102,7 @@ const waitForServiceWorkerReady = async (maxWaitTime: number = 10000): Promise<b
       await delay(500);
     }
   }
-  
+
   console.log('Service Worker not ready within timeout');
   return false;
 };
@@ -108,7 +121,7 @@ export const requestNotificationPermission = createAsyncThunk(
 
       // Register service worker first
       await registerServiceWorker();
-      
+
       // Wait for service worker to be ready
       const isSwReady = await waitForServiceWorkerReady();
       if (!isSwReady) {
@@ -122,7 +135,7 @@ export const requestNotificationPermission = createAsyncThunk(
       }
 
       const fcmToken = await getFCMTokenWithRetry(messagingInstance);
-      
+
       if (!fcmToken) {
         return rejectWithValue('Failed to get FCM token after retries');
       }
@@ -168,15 +181,15 @@ export const initializeNotifications = createAsyncThunk(
       if (Notification.permission === 'granted') {
         // Ensure service worker is registered
         await registerServiceWorker();
-        
+
         // Wait for service worker to be ready
         const isSwReady = await waitForServiceWorkerReady();
-        
+
         const messagingInstance = await messaging();
         if (messagingInstance) {
           try {
             const fcmToken = await getFCMTokenWithRetry(messagingInstance);
-            
+
             if (fcmToken) {
               console.log('FCM Token initialized:', fcmToken);
 
@@ -187,17 +200,21 @@ export const initializeNotifications = createAsyncThunk(
                 console.error('Failed to save FCM token to backend:', error);
               }
 
-              return { 
-                permission: 'granted', 
+              return {
+                permission: 'granted',
                 fcmToken,
-                isServiceWorkerReady: isSwReady 
+                isServiceWorkerReady: isSwReady,
               };
             } else {
-              return rejectWithValue('Failed to retrieve FCM token after retries');
+              return rejectWithValue(
+                'Failed to retrieve FCM token after retries'
+              );
             }
           } catch (error: any) {
             // console.error('Error getting FCM token during initialization:', error);
-            return rejectWithValue(`Failed to retrieve FCM token: ${error.message}`);
+            return rejectWithValue(
+              `Failed to retrieve FCM token: ${error.message}`
+            );
           }
         } else {
           return rejectWithValue(
@@ -207,10 +224,10 @@ export const initializeNotifications = createAsyncThunk(
       }
 
       // If not granted yet, return current status
-      return { 
-        permission: Notification.permission, 
+      return {
+        permission: Notification.permission,
         fcmToken: null,
-        isServiceWorkerReady: false 
+        isServiceWorkerReady: false,
       };
     } catch (error: any) {
       return rejectWithValue(
@@ -226,7 +243,7 @@ export const retryGetFCMToken = createAsyncThunk(
   async (_, { rejectWithValue, getState }) => {
     try {
       const state = getState() as { notification: NotificationState };
-      
+
       if (state.notification.permission !== 'granted') {
         return rejectWithValue('Notification permission not granted');
       }
@@ -234,14 +251,14 @@ export const retryGetFCMToken = createAsyncThunk(
       // Ensure service worker is registered and ready
       await registerServiceWorker();
       const isSwReady = await waitForServiceWorkerReady();
-      
+
       const messagingInstance = await messaging();
       if (!messagingInstance) {
         return rejectWithValue('Firebase messaging not available');
       }
 
       const fcmToken = await getFCMTokenWithRetry(messagingInstance);
-      
+
       if (!fcmToken) {
         return rejectWithValue('Failed to get FCM token after retries');
       }
@@ -314,7 +331,8 @@ const notificationSlice = createSlice({
         state.isLoading = false;
         state.permission = action.payload.permission;
         state.fcmToken = action.payload.fcmToken;
-        state.isServiceWorkerReady = action.payload.isServiceWorkerReady || false;
+        state.isServiceWorkerReady =
+          action.payload.isServiceWorkerReady || false;
         state.retryCount = 0;
       })
       .addCase(initializeNotifications.rejected, (state, action) => {
