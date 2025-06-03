@@ -65,6 +65,7 @@ export function ForgotPasswordForm() {
 
   return (
     <Card className="border-none shadow-lg">
+      <ToastContainer/>
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl text-center">Forgot password?</CardTitle>
         <div className="text-center">
