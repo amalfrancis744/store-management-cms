@@ -62,7 +62,7 @@ export function OTPVerificationModal({
         </DialogHeader>
         <div className="space-y-4">
           <p className="text-sm text-gray-600">
-            We've sent a 6-digit verification code to {email}
+            We&apos;ve sent a 6-digit verification code to {email}
           </p>
 
           <Input
@@ -75,7 +75,7 @@ export function OTPVerificationModal({
 
           <div className="flex justify-between">
             <Button
-              variant="outline"
+              type="primary"
               onClick={onResendOTP}
               disabled={isLoading}
             >

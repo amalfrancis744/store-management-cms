@@ -103,18 +103,8 @@ export function LoginForm() {
       <ToastContainer />
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl text-center">Sign in</CardTitle>
-        <div className="text-center">
-          <Link
-            href="/register"
-            className="text-sm text-blue-500 hover:underline"
-          >
-            I don&apos;t have an account
-          </Link>
-        </div>
       </CardHeader>
       <CardContent>
-        <SocialButtons />
-
         <div className="relative my-4">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-gray-300"></div>
@@ -197,13 +187,19 @@ export function LoginForm() {
               </Link>
             </div>
 
-            <Button
-              type="submit"
-              className="w-full bg-blue-500 hover:bg-blue-600"
-              disabled={isLoading}
-            >
-              {isLoading ? 'Signing in...' : 'Login'}
+            <Button type="primary" disabled={isLoading} width={410}>
+              {isLoading ? 'Signing in...' : 'Sign In'}
             </Button>
+
+            <SocialButtons/>
+            <div className="text-center">
+              <Link
+                href="/register"
+                className="text-sm text-blue-500 hover:underline"
+              >
+                I don&apos;t have an account
+              </Link>
+            </div>
           </form>
         </Form>
       </CardContent>

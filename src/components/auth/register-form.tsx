@@ -133,7 +133,13 @@ export function RegisterForm() {
     try {
       const response = await dispatch(resendSignupOTP(registeredEmail));
       if (resendSignupOTP.fulfilled.match(response)) {
-        toast.success('OTP resent successfully!');
+        console.log("respose resent otp:",response)
+        
+        const message =
+          typeof response.payload.message === 'string'
+            ? response.payload.message
+            : response.payload.message?.message;
+        toast.success(message || 'OTP resent successfully!');
       }
     } catch (error) {
       toast.error('Failed to resend OTP. Please try again.');
@@ -318,9 +324,10 @@ export function RegisterForm() {
               />
 
               <Button
-                type="submit"
-                className="w-full bg-blue-500 hover:bg-blue-600"
+              size='medium'
+                type="primary"
                 disabled={isLoading}
+                width={410}
               >
                 {isLoading ? 'Signing up...' : 'Sign Up'}
               </Button>

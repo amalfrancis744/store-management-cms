@@ -229,21 +229,14 @@ export const authAPI = {
   // Resend signup OTP
   resendSignupOTP: async (email: string) => {
     try {
-      const encryptedPayload = encryptPayload({ email });
+    
 
       const response = await axiosInstance.post(
-        '/auth/resend-signup-otp', // Assuming this endpoint exists
-        encryptedPayload
+        '/auth/resend-otp',
+        { email }
       );
 
-      if (response.data.iv && response.data.encryptedData) {
-        const decryptedData = decryptResponse<{ message: string }>(
-          response.data as EncryptedResponse
-        );
-        return { data: { message: decryptedData.message } };
-      } else {
-        return { data: { message: response.data.message } };
-      }
+      return { data: { message: response.data.message } };
     } catch (error) {
       throw error;
     }
