@@ -22,7 +22,7 @@ module.exports = {
       colors: {
         // Your custom color palette
         primary: {
-          DEFAULT: '#ED8213',
+          DEFAULT: '#008080',
           foreground: '#FFFFFF',
         },
         black: '#010100',
@@ -55,8 +55,10 @@ module.exports = {
         md: 'calc(0.5rem - 2px)',
         sm: 'calc(0.5rem - 4px)',
       },
-      fontFamily: {
-        sans: ['Public Sans', ...fontFamily.sans],
+   fontFamily: {
+        sans: ['Figtree', 'Heebo', 'Public Sans', ...fontFamily.sans], // Figtree as default, followed by Heebo, Public Sans, and fallbacks
+        figtree: ['Figtree', ...fontFamily.sans], // Custom utility for Figtree
+        heebo: ['Heebo', ...fontFamily.sans], // Custom utility for Heebo
       },
     },
   },

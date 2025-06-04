@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700&family=Heebo:wght@300;400;500;600;700&family=Public+Sans:wght@300;400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -6,7 +6,7 @@
 @layer base {
   :root {
     /*custom color  */
-    --primary: #ED8213;
+    --primary: #008080;
     --primary-foreground: #FFFFFF;
     --black: #010100;
     --error: #ED1313;
@@ -34,7 +34,7 @@
     /* Dark mode adaptations of your colors */
     --background: #010100;
     --foreground: #FFFFFF;
-    --primary: #ED8213;
+    --primary: #008080;
     --primary-foreground: #010100;
     --secondary: #1F2937;
     --secondary-foreground: #FFFFFF;
@@ -53,7 +53,8 @@
     @apply border-border;
   }
 
-  body {
-    @apply bg-background text-foreground ;
-  }
+body {
+    @apply bg-background text-foreground font-figtree;
+}
+
 }

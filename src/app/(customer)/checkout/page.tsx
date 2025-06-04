@@ -228,7 +228,7 @@ export default function CheckoutPage() {
             <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6">
               Start shopping to add items to your cart
             </p>
-            <Button asChild size="lg" className="w-full sm:w-auto px-4 sm:px-6">
+            <Button asChild size="large" className="w-full sm:w-auto px-4 sm:px-6">
               <Link href="/">Continue Shopping</Link>
             </Button>
           </div>
@@ -300,7 +300,7 @@ export default function CheckoutPage() {
                   ) : null}
 
                   <Button
-                    variant="link"
+                   type='primary'
                     className="mt-2 text-sm"
                     onClick={() => {
                       setUseNewAddress(!useNewAddress);
@@ -417,7 +417,7 @@ export default function CheckoutPage() {
 
                     {paymentMethod === 'STRIPE' && (
                       <p className="text-xs text-muted-foreground mt-2">
-                        You will be redirected to Stripe's secure payment page
+                        You will be redirected to Stripe&apos;s secure payment page
                         after placing your order.
                       </p>
                     )}
@@ -425,7 +425,7 @@ export default function CheckoutPage() {
 
                   <Button
                     className="w-full mt-3 sm:mt-4"
-                    size="lg"
+                    size="large"
                     onClick={handlePlaceOrder}
                     disabled={
                       !paymentMethod ||

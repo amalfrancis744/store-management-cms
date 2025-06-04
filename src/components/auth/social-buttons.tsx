@@ -6,7 +6,7 @@ export function SocialButtons() {
     <div className="flex  justify-center items-center gap-2 p-2">
       
        <Image src={"/Google.svg"} alt="Google logo" width={20} height={20} />
-        <span className="sr-only md:not-sr-only text-sm font-medium md:whitespace-nowrap">
+        <span className="text-sm font-medium md:whitespace-nowrap">
           Sign up with google
         </span>
 

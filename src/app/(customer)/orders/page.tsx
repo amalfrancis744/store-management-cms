@@ -80,10 +80,10 @@ const isOrderCancellable = (createdAt: string) => {
 };
 
 export default function OrderManagement() {
-  const { activeWorkspace } = useSelector(
-    (state: RootState) => state.workspace
-  );
-  const workspaceId: any = activeWorkspace;
+  // const { activeWorkspace } = useSelector(
+  //   (state: RootState) => state.workspace
+  // );
+  // const workspaceId: any = activeWorkspace;
   const dispatch = useAppDispatch();
   const router = useRouter();
   const gridRef = useRef<AgGridReact>(null);
@@ -235,16 +235,16 @@ export default function OrderManagement() {
           return (
             <div className="flex gap-2">
               <Button
-                variant="ghost"
-                size="icon"
+                type='primary'
+                size="medium"
                 onClick={() => handleView(params.data)}
               >
                 <Eye className="h-4 w-4 text-blue-500" />
               </Button>
               {params.data.status !== 'CANCELLED' && (
                 <Button
-                  variant="ghost"
-                  size="icon"
+                  type='primary'
+                  size="medium"
                   onClick={() => handleCancel(params.data.id)}
                   disabled={!isCancellable} // Disable button if not cancellable
                 >
@@ -340,7 +340,7 @@ export default function OrderManagement() {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="gap-2">
+                <Button type='primary' className="gap-2">
                   <Filter className="h-4 w-4" />
                   Order Status
                   {statusFilter.length > 0 && (
@@ -372,7 +372,7 @@ export default function OrderManagement() {
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="gap-2">
+                <Button type='primary' className="gap-2">
                   <Filter className="h-4 w-4" />
                   Payment
                   {paymentMethodFilter.length > 0 && (
@@ -429,7 +429,7 @@ export default function OrderManagement() {
               No orders found
             </h3>
             <p className="text-gray-500 mt-2">
-              You haven't placed any orders yet
+              You haven&apos;t placed any orders yet
             </p>
             <Button className="mt-4" onClick={() => router.push('/products')}>
               Start Shopping
@@ -629,12 +629,12 @@ export default function OrderManagement() {
               </Card>
 
               <div className="flex justify-end gap-3">
-                <Button variant="outline" onClick={handleCloseViewDialog}>
+                <Button type='primary' onClick={handleCloseViewDialog}>
                   Close
                 </Button>
                 {currentOrder.status !== 'CANCELLED' && (
                   <Button
-                    variant="destructive"
+                    type='primary'
                     onClick={() => {
                       handleCancel(currentOrder.id);
                       handleCloseViewDialog();

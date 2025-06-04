@@ -3,10 +3,18 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Eye, EyeOff } from 'lucide-react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import {
+  Eye,
+  EyeOff,
+  Search,
+  User,
+  Mail,
+  AlertCircle,
+  CheckCircle2,
+} from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,6 +35,7 @@ import {
   setWorkspaceId,
 } from '@/store/slices/authSlice';
 import { ToastContainer, toast } from 'react-toastify';
+import Image from 'next/image';
 
 // Define the schema for form validation
 const loginSchema = z.object({
@@ -99,21 +108,33 @@ export function LoginForm() {
   };
 
   return (
-    <Card className="border-none shadow-lg">
+    <Card className="border-none shadow-lg bg-white p-8 md:p-[50px]">
       <ToastContainer />
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl text-center">Sign in</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="relative my-4">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300"></div>
+        <div className="flex flex-col justify-center  items-center gap-3">
+          <div className="flex items-center space-x-2">
+            <Image
+              src="/app_logo.png"
+              alt="Shopventory Logo"
+              width={38}
+              height={34}
+            />
+            <h1 className=" text-md md:text-xl text-primary font-semibold uppercase font-heebo ">
+              Shopventory
+            </h1>
           </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white px-2 text-gray-500">or with email</span>
+
+          <div className="flex flex-col justify-center items-center">
+            <h2 className="text-lg  md:text-2xl font-bold text-black mb-1 font-figtree ">
+              Welcome Back !
+            </h2>
+            <p className="text-sm text-[#999999] font-figtree font-normal">
+              Log in to manage orders, inventory, and more.
+            </p>
           </div>
         </div>
-
+      </CardHeader>
+      <CardContent>
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(onSubmit)}
@@ -131,10 +152,11 @@ export function LoginForm() {
               name="email"
               render={({ field }) => (
                 <FormItem className="space-y-2">
-                  <FormLabel>Email Address</FormLabel>
+                  <FormLabel className='font-medium text-[#676766]'>Email Address</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="Enter your email"
+                      leftIcon={Mail}
                       type="email"
                       {...field}
                     />
@@ -150,27 +172,16 @@ export function LoginForm() {
               render={({ field }) => (
                 <FormItem className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel className='font-medium text-[#676766]'>Password</FormLabel>
                   </div>
                   <FormControl>
-                    <div className="relative">
+                    <div>
                       <Input
                         placeholder="Enter your password"
                         type={showPassword ? 'text' : 'password'}
                         className="pr-10"
                         {...field}
                       />
-                      <button
-                        type="button"
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                        onClick={() => setShowPassword(!showPassword)}
-                      >
-                        {showPassword ? (
-                          <EyeOff size={16} />
-                        ) : (
-                          <Eye size={16} />
-                        )}
-                      </button>
                     </div>
                   </FormControl>
                   <FormMessage />
@@ -181,24 +192,43 @@ export function LoginForm() {
             <div className="text-right">
               <Link
                 href="/forgot-password"
-                className="text-sm text-blue-500 hover:underline"
+                className="text-sm text-primary hover:underline font-semibold font-figtree"
               >
                 Forgot password?
               </Link>
             </div>
+            <div className="flex justify-center">
+              <Button type="primary" disabled={isLoading} size="large">
+                {isLoading ? 'Signing in...' : 'Sign In'}
+              </Button>
+            </div>
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-300"></div>
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-2 text-gray-500">
+                  or with email
+                </span>
+              </div>
+            </div>
 
-            <Button type="primary" disabled={isLoading} width={410}>
-              {isLoading ? 'Signing in...' : 'Sign In'}
-            </Button>
-
-            <SocialButtons/>
-            <div className="text-center">
-              <Link
-                href="/register"
-                className="text-sm text-blue-500 hover:underline"
+            <SocialButtons />
+            <div className="flex justify-center">
+              <p
+                className="text-sm  text-[#999999] font-normal"
+                style={{ fontFamily: 'Manrope' }}
               >
-                I don&apos;t have an account
-              </Link>
+                Don’t have an account?{' '}
+                <Link
+                  href="/register"
+                  className="font-semibold
+                   text-primary hover:underline"
+                  style={{ fontFamily: 'Figtree' }}
+                >
+                  Create Account
+                </Link>
+              </p>
             </div>
           </form>
         </Form>

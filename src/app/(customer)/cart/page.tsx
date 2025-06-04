@@ -58,7 +58,7 @@ export default function CartPage() {
         ) : error ? (
           <div className="flex flex-col items-center justify-center py-12 border rounded-lg">
             <p className="text-red-500 text-lg mb-4">{error}</p>
-            <Button asChild size="lg" className="w-full sm:w-auto px-4 sm:px-6">
+            <Button asChild size="large" className="w-full sm:w-auto px-4 sm:px-6">
               <Link href="/">Continue Shopping</Link>
             </Button>
           </div>
@@ -71,7 +71,7 @@ export default function CartPage() {
             <p className="text-sm sm:text-base text-muted-foreground mb-4 sm:mb-6">
               Start shopping to add items to your cart
             </p>
-            <Button asChild size="lg" className="w-full sm:w-auto px-4 sm:px-6">
+            <Button asChild size="large" className="w-full sm:w-auto px-4 sm:px-6">
               <Link href="/">Continue Shopping</Link>
             </Button>
           </div>
@@ -112,8 +112,8 @@ export default function CartPage() {
                           </p>
                         </div>
                         <Button
-                          variant="ghost"
-                          size="sm"
+                          type='primary'
+                          size="small"
                           className="text-destructive hover:text-destructive/80 sm:self-start"
                           onClick={() => handleRemove(item.variantId)}
                         >
@@ -123,8 +123,8 @@ export default function CartPage() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Button
-                            variant="outline"
-                            size="sm"
+                            type='primary'
+                            size="small"
                             className="h-8 w-8"
                             onClick={() =>
                               handleDecrement(item.variantId, item.quantity)
@@ -136,8 +136,8 @@ export default function CartPage() {
                             {item.quantity}
                           </span>
                           <Button
-                            variant="outline"
-                            size="sm"
+                           type='primary'
+                            size="small"
                             className="h-8 w-8"
                             onClick={() =>
                               handleIncrement(item.variantId, item.quantity)
@@ -171,15 +171,15 @@ export default function CartPage() {
                   <Button
                     asChild
                     className="w-full mt-4 bg-primary hover:bg-primary/90 transition-colors"
-                    size="lg"
+                    size="large"
                   >
                     <Link href="/checkout">Proceed to Checkout</Link>
                   </Button>
                   <Button
-                    variant="outline"
+                    type='primary'
                     asChild
                     className="w-full border-muted-foreground/30 hover:bg-muted/50"
-                    size="lg"
+                    size="large"
                   >
                     <Link href="/">Continue Shopping</Link>
                   </Button>

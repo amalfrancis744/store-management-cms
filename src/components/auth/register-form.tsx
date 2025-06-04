@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff,Mail } from 'lucide-react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -36,13 +36,14 @@ import {
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { OTPVerificationModal } from '../modal/OTPVerificationModal';
+import Image from 'next/image';
 
-const Role = {
-  ADMIN: 'ADMIN',
-  MANAGER: 'MANAGER',
-  STAFF: 'STAFF',
-  CUSTOMER: 'CUSTOMER',
-} as const;
+// const Role = {
+//   ADMIN: 'ADMIN',
+//   MANAGER: 'MANAGER',
+//   STAFF: 'STAFF',
+//   CUSTOMER: 'CUSTOMER',
+// } as const;
 
 const registerSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
@@ -64,9 +65,7 @@ export function RegisterForm() {
   const [registeredEmail, setRegisteredEmail] = useState('');
   const router = useRouter();
   const dispatch = useAppDispatch();
-  const { isLoading, error, pendingVerification } = useAppSelector(
-    (state) => state.auth
-  );
+  const { isLoading, error } = useAppSelector((state) => state.auth);
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -133,8 +132,8 @@ export function RegisterForm() {
     try {
       const response = await dispatch(resendSignupOTP(registeredEmail));
       if (resendSignupOTP.fulfilled.match(response)) {
-        console.log("respose resent otp:",response)
-        
+        console.log('respose resent otp:', response);
+
         const message =
           typeof response.payload.message === 'string'
             ? response.payload.message
@@ -159,16 +158,29 @@ export function RegisterForm() {
         autoClose={3000}
         hideProgressBar={false}
       />
-      <Card className="border-none shadow-lg sm:w-full md:w-full lg:w-[600px] mx-auto">
+      <Card className="border-none shadow-lg  mx-auto p-8 bg-white md:p-[50px]">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl text-center">Sign up</CardTitle>
-          <div className="text-center">
-            <Link
-              href="/login"
-              className="text-sm text-blue-500 hover:underline"
-            >
-              Already have an account?
-            </Link>
+          <div className="flex flex-col justify-center  items-center gap-3">
+            <div className="flex items-center space-x-2">
+              <Image
+                src="/app_logo.png"
+                alt="Shopventory Logo"
+                width={38}
+                height={34}
+              />
+              <h1 className=" text-md md:text-xl text-primary font-semibold uppercase font-heebo ">
+                Shopventory
+              </h1>
+            </div>
+
+            <div className="flex flex-col justify-center items-center">
+              <h2 className="text-lg  md:text-2xl font-bold text-black mb-1 font-figtree ">
+                Welcome Back !
+              </h2>
+              <p className="text-sm text-[#999999] font-figtree font-normal">
+                Smart tools for your bakery journey.
+              </p>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -179,7 +191,7 @@ export function RegisterForm() {
               className="space-y-4"
             >
               {error && (
-                <div className="text-red-500 text-sm text-center p-2 bg-red-50 rounded">
+                <div className="text-error text-sm text-center p-2 bg-red-50 rounded">
                   {error}
                 </div>
               )}
@@ -189,8 +201,8 @@ export function RegisterForm() {
                   control={form.control}
                   name="firstName"
                   render={({ field }) => (
-                    <FormItem className="space-y-2">
-                      <FormLabel>First name</FormLabel>
+                    <FormItem className="space-y-2 font-figtree font-medium">
+                      <FormLabel className='font-medium text-[#676766]'>First name</FormLabel>
                       <FormControl>
                         <Input placeholder="Enter your first name" {...field} />
                       </FormControl>
@@ -204,7 +216,7 @@ export function RegisterForm() {
                   name="lastName"
                   render={({ field }) => (
                     <FormItem className="space-y-2">
-                      <FormLabel>Last name</FormLabel>
+                      <FormLabel className='font-medium text-[#676766]' >Last name</FormLabel>
                       <FormControl>
                         <Input placeholder="Enter your last name" {...field} />
                       </FormControl>
@@ -219,11 +231,14 @@ export function RegisterForm() {
                 name="email"
                 render={({ field }) => (
                   <FormItem className="space-y-2">
-                    <FormLabel>Email address</FormLabel>
+                    <FormLabel className='font-medium text-[#676766]'>Email address</FormLabel>
                     <FormControl>
                       <Input
                         type="email"
                         placeholder="Enter your email"
+                        leftIcon={Mail}
+
+
                         {...field}
                       />
                     </FormControl>
@@ -231,54 +246,58 @@ export function RegisterForm() {
                   </FormItem>
                 )}
               />
-
-              <FormField
-                control={form.control}
-                name="phone"
-                render={({ field }) => (
-                  <FormItem className="space-y-2">
-                    <FormLabel>Phone number</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter your phone number" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="role"
-                render={({ field }) => (
-                  <FormItem className="space-y-2">
-                    <FormLabel>Role</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem className="space-y-2">
+                      <FormLabel className='font-medium text-[#676766]'>Phone number</FormLabel>
                       <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a role" />
-                        </SelectTrigger>
+                        <Input
+                          placeholder="Enter your phone number"
+                          {...field}
+                        />
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="ADMIN">Admin</SelectItem>
-                        <SelectItem value="MANAGER">Manager</SelectItem>
-                        <SelectItem value="STAFF">Staff</SelectItem>
-                        <SelectItem value="CUSTOMER">Customer</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="role"
+                  render={({ field }) => (
+                    <FormItem className="space-y-2">
+                      <FormLabel className='font-medium text-[#676766]'>Role</FormLabel>
+                      <Select
+                        onValueChange={field.onChange}
+                        defaultValue={field.value}
+                      >
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a role" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="ADMIN">Admin</SelectItem>
+                          <SelectItem value="MANAGER">Manager</SelectItem>
+                          <SelectItem value="STAFF">Staff</SelectItem>
+                          <SelectItem value="CUSTOMER">Customer</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
 
               <FormField
                 control={form.control}
                 name="password"
                 render={({ field }) => (
                   <FormItem className="space-y-2">
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel className='font-medium text-[#676766]'>Password</FormLabel>
                     <FormControl>
                       <div className="relative">
                         <Input
@@ -304,33 +323,31 @@ export function RegisterForm() {
                         </button>
                       </div>
                     </FormControl>
-                    <div className="h-1 w-full bg-gray-200 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full ${
-                          passwordStrength === 'poor'
-                            ? 'w-1/4 bg-red-500'
-                            : passwordStrength === 'medium'
-                              ? 'w-2/4 bg-yellow-500'
-                              : 'w-full bg-green-500'
-                        }`}
-                      />
-                    </div>
-                    <p className="text-xs text-gray-500 capitalize">
-                      {passwordStrength}
-                    </p>
+               
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <Button
-              size='medium'
-                type="primary"
-                disabled={isLoading}
-                width={410}
-              >
+              <Button size="large" type="primary" disabled={isLoading}>
                 {isLoading ? 'Signing up...' : 'Sign Up'}
               </Button>
+              <div className="flex justify-center">
+              <p
+                className="text-sm  text-[#999999] font-normal"
+                style={{ fontFamily: 'Manrope' }}
+              >
+                Already have an account?{' '}
+                <Link
+                  href="/login"
+                  className="font-semibold
+                   text-primary hover:underline"
+                  style={{ fontFamily: 'Figtree' }}
+                >
+                 Sign In
+                </Link>
+              </p>
+            </div>
             </form>
           </Form>
         </CardContent>

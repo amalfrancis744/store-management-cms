@@ -185,7 +185,7 @@ export default function OrderConfirmationPage() {
           <Button asChild>
             <Link href="/stores">Continue Shopping</Link>
           </Button>
-          <Button asChild variant="outline">
+          <Button asChild type='primary'>
             <Link href="/orders">
               <ShoppingBag className="mr-2 h-4 w-4" />
               View Your Orders
