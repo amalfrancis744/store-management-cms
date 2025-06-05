@@ -701,8 +701,8 @@ export default function StorePage() {
                       </CardHeader>
                       <CardFooter className="p-3 md:p-4 pt-0 flex justify-between gap-2">
                         <Button
-                          variant="outline"
-                          size="sm"
+                          type="primary"
+                          size="small"
                           className="flex-1 text-xs md:text-sm"
                           onClick={() => {
                             const variant = getSelectedVariant(product);

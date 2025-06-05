@@ -7,14 +7,14 @@ const cn = (...classes) => {
 };
 
 const inputVariants = cva(
-  'flex w-full rounded-lg border px-3 py-2 text-sm bg-white transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-1 placeholder:text-gray-400',
+  'flex w-full rounded-lg border px-3 py-2 text-sm bg-white transition-all duration-200 focus:outline-none  placeholder:text-gray-400',
   {
     variants: {
       variant: {
-        default: 'border-gray-300 hover:border-gray-400 focus:border-blue-500 focus:ring-blue-200',
-        field: 'border-blue-500 focus:border-blue-500 focus:ring-blue-200',
-        error: 'border-red-500 focus:border-red-500 focus:ring-red-200',
-        success: 'border-green-600 focus:border-green-600 focus:ring-green-200',
+        default: 'border-gray-300 hover:border-gray-400  ',
+        field: 'border-blue-500 focus:border-blue-500 ',
+        error: 'border-red-500 focus:border-red-500 ',
+        success: 'border-green-600 focus:border-green-600',
       },
       size: {
         small: 'h-8 text-xs',

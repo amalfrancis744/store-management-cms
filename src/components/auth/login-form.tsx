@@ -7,17 +7,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import {
-  Eye,
-  EyeOff,
-  Search,
-  User,
+
   Mail,
-  AlertCircle,
-  CheckCircle2,
+
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
   Form,
@@ -128,7 +124,7 @@ export function LoginForm() {
             <h2 className="text-lg  md:text-2xl font-bold text-black mb-1 font-figtree ">
               Welcome Back !
             </h2>
-            <p className="text-sm text-[#999999] font-figtree font-normal">
+            <p className="text-sm text-secondary font-figtree font-normal">
               Log in to manage orders, inventory, and more.
             </p>
           </div>
@@ -155,13 +151,15 @@ export function LoginForm() {
                   <FormLabel className='font-medium text-[#676766]'>Email Address</FormLabel>
                   <FormControl>
                     <Input
+                        variant={form.formState.errors.email ? 'error' : 'default'}
+
                       placeholder="Enter your email"
-                      leftIcon={Mail}
+                    
                       type="email"
                       {...field}
                     />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className='text-error font-medium text-xs' />
                 </FormItem>
               )}
             />
@@ -177,6 +175,7 @@ export function LoginForm() {
                   <FormControl>
                     <div>
                       <Input
+                        variant={form.formState.errors.password ? 'error' : 'default'}
                         placeholder="Enter your password"
                         type={showPassword ? 'text' : 'password'}
                         className="pr-10"
@@ -184,7 +183,7 @@ export function LoginForm() {
                       />
                     </div>
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className='text-error font-medium text-xs' />
                 </FormItem>
               )}
             />
@@ -207,24 +206,23 @@ export function LoginForm() {
                 <div className="w-full border-t border-gray-300"></div>
               </div>
               <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-gray-500">
-                  or with email
+                <span className="bg-white px-2 text-gray-500 font-manrope">
+                  Or login with
                 </span>
               </div>
             </div>
 
             <SocialButtons />
-            <div className="flex justify-center">
+            <div className="flex font-figtree justify-center">
               <p
-                className="text-sm  text-[#999999] font-normal"
-                style={{ fontFamily: 'Manrope' }}
+                className="text-sm  text-secondary font-normal "
               >
                 Don’t have an account?{' '}
                 <Link
                   href="/register"
                   className="font-semibold
                    text-primary hover:underline"
-                  style={{ fontFamily: 'Figtree' }}
+            
                 >
                   Create Account
                 </Link>

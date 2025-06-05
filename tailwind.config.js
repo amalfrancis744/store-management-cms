@@ -20,34 +20,35 @@ module.exports = {
     },
     extend: {
       colors: {
-        // Your custom color palette
+     
         primary: {
-          DEFAULT: '#008080',
-          foreground: '#FFFFFF',
+          DEFAULT: "var(--primary)",
+          foreground: "var(--primary-foreground)",
         },
-        black: '#010100',
-        error: '#ED1313',
-        success: '#66CA10',
-        white: '#FFFFFF',
-        background: '#F2F8F8',
+        black: "var(--black)",
+        error: "var(--error)",
+        success: "var(--success)",
+        white: "var(--white)",
+        background: "var(--background)",
         
-        // Keep essential UI colors
-        border: '#E5E7EB',
-        input: '#F3F4F6',
-        ring: '#ED8213',
-        foreground: '#010100',
+       
+        border: "var(--border)",
+        input: "var(--input)",
+        ring: "var(--ring)",
+        foreground: "var(--foreground)",
         
         secondary: {
-          DEFAULT: '#F3F4F6',
-          foreground: '#010100',
+          DEFAULT: "var(--secondary)",
+          foreground: "var(--secondary-foreground)",
+
         },
         muted: {
-          DEFAULT: '#F9FAFB',
-          foreground: '#6B7280',
+          DEFAULT: "var(--muted)",
+          foreground: "var(--muted-foreground)",
         },
         accent: {
-          DEFAULT: '#F2F8F8',
-          foreground: '#010100',
+          DEFAULT: "var(--accent)",
+          foreground:"var(--accent-foreground)",
         },
       },
       borderRadius: {
@@ -58,7 +59,8 @@ module.exports = {
    fontFamily: {
         sans: ['Figtree', 'Heebo', 'Public Sans', ...fontFamily.sans], // Figtree as default, followed by Heebo, Public Sans, and fallbacks
         figtree: ['Figtree', ...fontFamily.sans], // Custom utility for Figtree
-        heebo: ['Heebo', ...fontFamily.sans], // Custom utility for Heebo
+        heebo: ['Heebo', ...fontFamily.sans],
+        manrope:['Manrope',...fontFamily.sans] // Custom utility for Heebo
       },
     },
   },

@@ -18,36 +18,7 @@ export function Logo() {
         />
       </div>
 
-      {/* <div className="hidden md:block w-10 h-10">
-        <svg viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-          <path 
-            d="M256 32C150 32 64 118 64 224v192h384V224c0-106-86-192-192-192z" 
-            fill="#f8d377" 
-            stroke="#e3b04b" 
-            strokeWidth="12"
-          />
-          <path 
-            d="M128 224c0-70.7 57.3-128 128-128s128 57.3 128 128" 
-            fill="none" 
-            stroke="#e3b04b" 
-            strokeWidth="12" 
-            strokeLinecap="round"
-          />
-          <circle cx="256" cy="160" r="24" fill="#e3b04b" />
-          <circle cx="192" cy="192" r="24" fill="#e3b04b" />
-          <circle cx="320" cy="192" r="24" fill="#e3b04b" />
-          <path 
-            d="M64 416h384" 
-            stroke="#e3b04b" 
-            strokeWidth="12" 
-            strokeLinecap="round"
-          />
-        </svg>
-      </div> */}
-
-      {/* <span className="text-2xl font-bold text-amber-900">
-        Artisan Bake
-      </span> */}
+      
     </Link>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 
 import type React from 'react';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import {
@@ -15,6 +15,9 @@ import { Input } from '@/components/ui/input';
 import { useMutation } from '@tanstack/react-query';
 import { ToastContainer, toast } from 'react-toastify';
 import { authAPI } from '@/api/auth-api';
+import Image from 'next/image';
+import { ArrowLeft } from 'lucide-react';
+import Link from 'next/link';
 
 interface VerificationFormProps {
   email: string;
@@ -24,6 +27,9 @@ export function VerificationForm({ email }: VerificationFormProps) {
   const router = useRouter();
   // Update to use 6 digits instead of 4
   const [code, setCode] = useState(['', '', '', '', '', '']);
+  const [timer, setTimer] = useState(20); // 20 second countdown
+  const [canResend, setCanResend] = useState(false);
+  
   const inputRefs = [
     useRef<HTMLInputElement>(null),
     useRef<HTMLInputElement>(null),
@@ -33,11 +39,38 @@ export function VerificationForm({ email }: VerificationFormProps) {
     useRef<HTMLInputElement>(null),
   ];
 
+  // Timer effect
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    
+    if (timer > 0) {
+      interval = setInterval(() => {
+        setTimer((prevTimer) => prevTimer - 1);
+      }, 1000);
+    } else {
+      setCanResend(true);
+    }
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
+  }, [timer]);
+
+  // Format timer display
+  const formatTimer = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
   // Set up react-query mutation for resending OTP
   const resendOTPMutation = useMutation({
     mutationFn: (email: string) => authAPI.forgotPassword(email),
     onSuccess: () => {
       toast.success('OTP resent successfully. Please check your email.');
+      // Reset timer when OTP is resent
+      setTimer(20);
+      setCanResend(false);
     },
     onError: (error) => {
       console.error('Error resending OTP:', error);
@@ -116,7 +149,9 @@ export function VerificationForm({ email }: VerificationFormProps) {
   };
 
   const handleResend = () => {
-    resendOTPMutation.mutate(email);
+    if (canResend && !resendOTPMutation.isPending) {
+      resendOTPMutation.mutate(email);
+    }
   };
 
   const handleBackToLogin = () => {
@@ -124,21 +159,34 @@ export function VerificationForm({ email }: VerificationFormProps) {
   };
 
   return (
-    <Card className="border-none shadow-lg">
+    <Card className="gap-10 border shadow-sm">
       <ToastContainer />
       <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl text-center">
-          Enter Verification Code
-        </CardTitle>
-        <CardDescription className="text-center">
-          We sent you a code via email.
-        </CardDescription>
+        <div className="flex flex-col justify-center  items-center gap-3">
+          <div className="flex items-center space-x-2">
+            <Image
+              src="/app_logo.png"
+              alt="Shopventory Logo"
+              width={38}
+              height={34}
+            />
+            <h1 className=" text-md md:text-xl text-primary font-semibold uppercase font-heebo ">
+              Shopventory
+            </h1>
+          </div>
+
+          <div className="flex flex-col justify-center items-center">
+            <h2 className="text-lg  md:text-2xl font-bold text-black mb-1 font-figtree ">
+              Enter Your Code
+            </h2>
+            <p className="text-sm text-secondary font-figtree font-normal">
+              We&apos;ve sent a code to{' '}
+              {email.replace(/(.{2})(.*)(?=@)/, '$1***')}
+            </p>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
-        <p className="text-sm text-center mb-6">
-          We&apos;ve sent a code to {email.replace(/(.{2})(.*)(?=@)/, '$1***')}
-        </p>
-
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="flex justify-between gap-2">
             {code.map((digit, index) => (
@@ -157,10 +205,34 @@ export function VerificationForm({ email }: VerificationFormProps) {
               />
             ))}
           </div>
+          
+          {/* Timer and Resend OTP Section */}
+          <div className="flex justify-center items-center mt-6">
+            <div className="text-center">
+              {!canResend ? (
+                <span 
+                  className="font-figtree text-sm font-medium"
+                  style={{ color: 'var(--Secondary-500, #999)' }}
+                >
+                  Resend OTP {formatTimer(timer)}
+                </span>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleResend}
+                  disabled={resendOTPMutation.isPending}
+                  className="font-figtree text-sm font-semibold cursor-pointer border-none bg-transparent p-0 hover:underline"
+                  style={{ color: 'var(--Primary-L-1000, #008080)' }}
+                >
+                  {resendOTPMutation.isPending ? 'Sending...' : 'Resend OTP'}
+                </button>
+              )}
+            </div>
+          </div>
 
           <Button
-            type="submit"
-            className="w-full bg-blue-500 hover:bg-blue-600"
+            type="primary"
+            size='large'
             disabled={
               verifyOTPMutation.isPending || resendOTPMutation.isPending
             }
@@ -169,26 +241,14 @@ export function VerificationForm({ email }: VerificationFormProps) {
           </Button>
         </form>
 
-        <div className="flex justify-between items-center mt-6">
-          <p className="text-sm">Didn&apos;t receive the code?</p>
-          <Button
-            variant="link"
-            className="p-0 h-auto text-blue-500"
-            onClick={handleResend}
-            disabled={resendOTPMutation.isPending}
+        <div className="text-center flex flex-row justify-center items-center space-x-1 mt-8 ">
+          <ArrowLeft className="w-4 h-4 text-sm text-secondary" />
+          <Link
+            href="/login"
+            className="text-sm text-secondary font-semibold no-underline cursor-pointer"
           >
-            {resendOTPMutation.isPending ? 'Sending...' : 'Resend code'}
-          </Button>
-        </div>
-
-        <div className="text-center mt-4">
-          <Button
-            variant="outline"
-            className="text-blue-500"
-            onClick={handleBackToLogin}
-          >
-            Back to Login
-          </Button>
+            Back to Sign Up
+          </Link>
         </div>
       </CardContent>
     </Card>

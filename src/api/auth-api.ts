@@ -229,12 +229,7 @@ export const authAPI = {
   // Resend signup OTP
   resendSignupOTP: async (email: string) => {
     try {
-    
-
-      const response = await axiosInstance.post(
-        '/auth/resend-otp',
-        { email }
-      );
+      const response = await axiosInstance.post('/auth/resend-otp', { email });
 
       return { data: { message: response.data.message } };
     } catch (error) {
@@ -306,15 +301,37 @@ export const authAPI = {
   },
   resetPassword: async (resetToken: string, password: string) => {
     try {
+      console.log('before hit this api reserPassword');
       const response = await axiosInstance.post('/auth/reset-password', {
         resetToken,
         newPassword: password,
       });
+
+      console.log('amal checking frotend : ', response);
       return { data: response.data };
     } catch (error) {
       throw error;
     }
   },
+checkVerificationLink: async (resetToken: string) => {
+  try {
+    const response = await axiosInstance.post('/auth/check-token', {
+      resetToken,
+    });
+    return response.data; // Directly return the API response
+  } catch (error: any) {
+    // If server responds with error data, use that
+    if (error.response?.data) {
+      return error.response.data;
+    }
+    // Otherwise return a generic error
+    return {
+      success: false,
+      message: error.message || 'Failed to verify reset link'
+    };
+  }
+},
+
   becomeAdmin: async () => {
     try {
       const response = await axiosInstance.post('/users/become-admin');
