@@ -277,8 +277,8 @@ export function RegisterForm() {
                           </FormControl>
                           <SelectContent className="bg-white">
                             <SelectItem value="ADMIN">Admin</SelectItem>
-                            <SelectItem value="MANAGER">Manager</SelectItem>
-                            <SelectItem value="STAFF">Staff</SelectItem>
+                            {/* <SelectItem value="MANAGER">Manager</SelectItem>
+                            <SelectItem value="STAFF">Staff</SelectItem> */}
                             <SelectItem value="CUSTOMER">Customer</SelectItem>
                           </SelectContent>
                         </Select>
