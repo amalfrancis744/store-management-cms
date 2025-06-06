@@ -2,8 +2,6 @@
 'use client';
 
 import '@fontsource/figtree'; 
-
-
 import NotificationProviderFirebase from '@/provider/FirebaseProvider';
 import './globals.css';
 import { Providers } from './providers';

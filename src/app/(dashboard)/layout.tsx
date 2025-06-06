@@ -7,14 +7,10 @@ import Image from 'next/image';
 import {
   Layout,
   PackageSearch,
-  Settings,
   PackagePlus,
   Users,
   UserPlus,
-  Store,
   Network,
-  ListOrdered,
-  ReceiptIndianRupee,
   X,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -83,7 +79,7 @@ export default function AdminLayout({
   ];
 
   return (
-    <div className="flex min-h-screen">
+    <div className="flex min-h-screen bg-background mx-2 p-3">
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div
@@ -95,20 +91,23 @@ export default function AdminLayout({
       {/* Sidebar */}
       <div
         className={cn(
-          'fixed inset-y-0 left-0 z-50 w-64 transform flex-col border-r bg-white p-4 transition-transform duration-200 md:static md:translate-x-0 md:flex',
+          'fixed inset-y-0 left-0 z-50 w-64 transform flex-col border-r bg-white rounded-lg px-5 transition-transform duration-200 md:static md:translate-x-0 md:flex',
           isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
         <div className="flex items-center justify-between px-2 ">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 pt-7 pb-9">
             <div className="flex justify-end ">
               <Image
-                src="/logo.svg"
+                src="/app_logo.png"
                 alt="Mantis logo"
                 width={100}
                 height={100}
-                className="h-16 w-auto object-contain"
+                className="h-9 w-auto object-contain"
               />
+            </div>
+            <div className='font-inria font-bold text-xl uppercase leading-[100%] text-black'>
+              <h1>Shopventory</h1>
             </div>
           </div>
 
@@ -119,10 +118,10 @@ export default function AdminLayout({
             <X className="h-5 w-5" />
           </Button>
         </div>
-        <div className="h-px bg-gray-300 w-full mt-2"></div>
+        {/* <div className="h-px bg-gray-300 w-full mt-2"></div> */}
 
-        <div className="mt-8 space-y-6">
-          <div className="space-y-1">
+        <div className="space-y-6">
+          <div className="space-y-1 ">
             {navItems.map((item) => {
               const Icon = item.icon;
               const isActive = pathname === item.path;
@@ -132,8 +131,8 @@ export default function AdminLayout({
                   href={item.path}
                   key={item.name}
                   className={cn(
-                    'flex w-full items-center gap-3 rounded-md px-4 py-2 text-sm font-medium',
-                    isActive ? 'bg-gray-100' : 'text-gray-700 hover:bg-gray-100'
+                    'flex w-full items-center gap-3 rounded-md px-4 py-2 font-figtree font-semibold text-base text-secondary-medium',
+                    isActive ? 'text-black' : ' text-secondary-medium'
                   )}
                   onClick={() => {
                     setIsSidebarOpen(false);
@@ -141,7 +140,7 @@ export default function AdminLayout({
                   }}
                 >
                   <Icon className="h-5 w-5" />
-                  {item.name.toUpperCase()}
+                  {item.name.charAt(0).toUpperCase() + item.name.slice(1)}
                 </Link>
               );
             })}

@@ -7,7 +7,7 @@ const cn = (...classes) => {
 };
 
 const inputVariants = cva(
-  'flex w-full rounded-lg border px-3 py-2 text-sm bg-white transition-all duration-200 focus:outline-none  placeholder:text-gray-400',
+  'flex w-full rounded-lg border px-3 py-2 text-sm bg-white transition-all duration-200 focus:outline-0  placeholder:text-gray-400',
   {
     variants: {
       variant: {
