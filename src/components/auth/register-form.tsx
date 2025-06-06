@@ -7,11 +7,11 @@ import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader} from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Checkbox } from '@/components/ui/checkbox';
+
 import {
   Form,
   FormControl,
@@ -28,21 +28,19 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useAppDispatch, useAppSelector } from '@/hooks/redux';
-import {
-  registerUser,
-  clearErrors,
-} from '@/store/slices/authSlice';
+import { registerUser, clearErrors } from '@/store/slices/authSlice';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Image from 'next/image';
 import { Label } from '../ui/label';
+import { PhoneInput } from './phone_input';
 
 const registerSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
   email: z.string().email('Please enter a valid email address'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
-  phone: z.string().min(10, 'Phone number must be at least 10 digits'),
+  phone: z.string().min(13, 'Phone number must be at least 10 digits'),
   role: z.enum(['ADMIN', 'MANAGER', 'STAFF', 'CUSTOMER']),
   acceptTerms: z.boolean().refine((val) => val === true, {
     message: 'You must accept the Terms & Conditions',
@@ -101,7 +99,7 @@ export function RegisterForm() {
         toast.success(
           'Registration successful! Redirecting to verify your email...'
         );
-        
+
         // Redirect to OTP verification page with email parameter
         setTimeout(() => {
           router.push(`/verify-otp?email=${encodeURIComponent(values.email)}`);
@@ -174,10 +172,14 @@ export function RegisterForm() {
                         First name
                       </FormLabel>
                       <FormControl>
-                        <Input 
-                          variant={form.formState.errors.firstName ? 'error' : 'default'}
-                          placeholder="Enter your first name" 
-                          {...field} 
+                        <Input
+                          variant={
+                            form.formState.errors.firstName
+                              ? 'error'
+                              : 'default'
+                          }
+                          placeholder="Enter your first name"
+                          {...field}
                         />
                       </FormControl>
                       <FormMessage className="text-error font-medium text-xs" />
@@ -194,10 +196,12 @@ export function RegisterForm() {
                         Last name
                       </FormLabel>
                       <FormControl>
-                        <Input 
-                          variant={form.formState.errors.lastName ? 'error' : 'default'}
-                          placeholder="Enter your last name" 
-                          {...field} 
+                        <Input
+                          variant={
+                            form.formState.errors.lastName ? 'error' : 'default'
+                          }
+                          placeholder="Enter your last name"
+                          {...field}
                         />
                       </FormControl>
                       <FormMessage className="text-error font-medium text-xs" />
@@ -216,7 +220,9 @@ export function RegisterForm() {
                     </FormLabel>
                     <FormControl>
                       <Input
-                        variant={form.formState.errors.email ? 'error' : 'default'}
+                        variant={
+                          form.formState.errors.email ? 'error' : 'default'
+                        }
                         placeholder="Enter your email"
                         {...field}
                       />
@@ -225,55 +231,62 @@ export function RegisterForm() {
                   </FormItem>
                 )}
               />
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="phone"
-                  render={({ field }) => (
-                    <FormItem className="space-y-2">
-                      <FormLabel className="font-medium text-[#676766]">
-                        Phone number
-                      </FormLabel>
-                      <FormControl>
-                        <Input
-                          variant={form.formState.errors.phone ? 'error' : 'default'}
-                          placeholder="Enter your phone number"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage className="text-error font-medium text-xs" />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="role"
-                  render={({ field }) => (
-                    <FormItem className="space-y-2">
-                      <FormLabel className="font-medium text-[#676766]">
-                        Role
-                      </FormLabel>
-                      <Select
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                      >
+              <div className=" grid grid-cols-1 md:grid-cols-3 gap-2">
+                <div className="col-span-2">
+                  <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                      <FormItem className="space-y-2">
+                        <FormLabel className="font-medium text-[#676766]">
+                          Phone number
+                        </FormLabel>
                         <FormControl>
-                          <SelectTrigger className={`h-12 border border-gray-300`}>
-                            <SelectValue placeholder="Select a role" />
-                          </SelectTrigger>
+                          <PhoneInput
+                            placeholder="Enter phone number"
+                            value={field.value}
+                            onChange={(value) => field.onChange(value || '')}
+                            defaultCountry="IN"
+                            international
+                          />
                         </FormControl>
-                        <SelectContent className="bg-white">
-                          <SelectItem value="ADMIN">Admin</SelectItem>
-                          <SelectItem value="MANAGER">Manager</SelectItem>
-                          <SelectItem value="STAFF">Staff</SelectItem>
-                          <SelectItem value="CUSTOMER">Customer</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage className="text-error font-medium text-xs" />
-                    </FormItem>
-                  )}
-                />
+                        <FormMessage className="text-error font-medium text-xs" />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <div className="col-span-1">
+                  <FormField
+                    control={form.control}
+                    name="role"
+                    render={({ field }) => (
+                      <FormItem className="space-y-2">
+                        <FormLabel className="font-medium text-[#676766]">
+                          Role
+                        </FormLabel>
+                        <Select
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                        >
+                          <FormControl>
+                            <SelectTrigger
+                              className={`h-12 border border-gray-300`}
+                            >
+                              <SelectValue placeholder="Select a role" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent className="bg-white">
+                            <SelectItem value="ADMIN">Admin</SelectItem>
+                            <SelectItem value="MANAGER">Manager</SelectItem>
+                            <SelectItem value="STAFF">Staff</SelectItem>
+                            <SelectItem value="CUSTOMER">Customer</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage className="text-error font-medium text-xs" />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
 
               <FormField
@@ -316,7 +329,10 @@ export function RegisterForm() {
                           onCheckedChange={field.onChange}
                         />
                       </FormControl>
-                      <Label htmlFor="terms" className='font-figtree font-medium text-black text-sm'>
+                      <Label
+                        htmlFor="terms"
+                        className="font-figtree font-medium text-black text-sm"
+                      >
                         I agree to the Terms & Conditions and Privacy Policy
                       </Label>
                     </div>
